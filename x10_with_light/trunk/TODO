@@ -1,0 +1,4 @@
+1. make the house/device code programmable upon start up and store to flash
+2. work on how to program device codes to each of the output pins
+3. possible create a programming interface on the serial port
+

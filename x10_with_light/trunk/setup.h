@@ -1,0 +1,23 @@
+/*
+$Rev$
+$Author$
+$Date$
+*/
+
+
+
+void setup() {
+	attachInterrupt(0, Check_Rcvr, CHANGE);// (pin 2) trigger zero cross
+	Serial.begin(9600);
+	pinMode(LED_PIN, OUTPUT); 			// onboard LED
+	pinMode(control_pin, OUTPUT);
+	pinMode(RCVE_PIN, INPUT); 			// receive X10 commands - low = 1
+	pinMode(ZCROSS_PIN, INPUT); 		// zero crossing - 60 Hz square wave
+	digitalWrite(RCVE_PIN, HIGH); 		// set 20K pullup (low active signal)
+	digitalWrite(ZCROSS_PIN, HIGH); 	// set 20K pullup (low active signal)
+	pinMode(DC_RCVE_PIN, INPUT);
+	pinMode(DC_TRANS_PIN, OUTPUT);
+	pinMode(DC_CLOCK_PIN, OUTPUT);
+	digitalWrite(DC_TRANS_PIN, HIGH);
+	digitalWrite(DC_CLOCK_PIN, HIGH);
+}
