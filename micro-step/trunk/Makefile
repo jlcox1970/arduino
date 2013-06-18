@@ -1,4 +1,6 @@
 ARDUINO_DIR = /usr/share/arduino/
+
+
   
 BOARD = atemga328
 TARGET       = CLItest
