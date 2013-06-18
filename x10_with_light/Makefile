@@ -5,7 +5,7 @@ BOARD	     = atmega328
 TARGET       = CLItest
 MCU          = atmega328p
 F_CPU        = 16000000
-ARDUINO_PORT = /dev/ttyS0
+SERIALDEV = /dev/ttyS0
 
 ARDUINO_LIBS = x10
 
