@@ -4,7 +4,7 @@ $Author$
 $Date$
 */
 
-#include "WProgram.h"
+#include "Arduino.h"
 #include "debug.h"
 #include "setup.h"
 
