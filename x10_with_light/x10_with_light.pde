@@ -8,7 +8,7 @@
  * - Must detach interrup when transmitting with X10    Lib 
  */
 
-#include "WProgram.h"                  // this is needed to compile with Rel. 0013
+#include "Arduino.h"                  // this is needed to compile with Rel. 0013
 #include <x10.h>                       // X10 lib is used for transmitting X10
 #include <x10constants.h>              // X10 Lib constants
 #define RPT_SEND 1                     // how many times transmit repeats if noisy set higher
