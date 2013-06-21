@@ -65,9 +65,9 @@ void loop() {
 	tempValue = (ref_val * 0.0048876) * 10;
 	count = tempValue - 4;
 	if (pause == 1000) {
-//		Serial.print("bit value  ");
-//		Serial.print(bit_val, DEC);
-//		Serial.println("");
+                Serial.print("bit value  ");
+                Serial.print(bit_val, DEC);
+                Serial.println("");
 			if (old_val < tempValue - 2) {
 			newX10 = true;
 			unitCode = 16;
