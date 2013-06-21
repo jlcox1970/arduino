@@ -21,7 +21,7 @@
 //#define temp_pin       A5
 //#define ref_vcc        A4
 #define DC_TRANS_PIN	8				// DC Bus data out
-#define DC_RCVE_PIN		6				// DC Bus data in
+#define DC_RCVE_PIN	6				// DC Bus data in
 #define DC_CLOCK_PIN	7				// DC_Bus Clock
 
 volatile unsigned long mask; // MSB first - bit 12 - bit 0
@@ -139,8 +139,9 @@ void loop() {
 			}
 		}
 		if (unitCode == 16 && houseCode == 65) {
-			if (cmndCode == STATUS_REQUEST) {
-				Serial.print("Temp requested for ");
+//			if (cmndCode == STATUS_REQUEST) {
+                        if (cmndCode == PRESET) {
+                        Serial.print("Temp requested for ");
 				Serial.print(houseCode, DEC);
 				Serial.println("");
 				SendX10.x10temp(houseCode, unitCode, count, 2);
