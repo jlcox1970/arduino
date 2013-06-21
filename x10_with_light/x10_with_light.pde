@@ -139,8 +139,8 @@ void loop() {
 			}
 		}
 		if (unitCode == 16 && houseCode == 65) {
-//			if (cmndCode == STATUS_REQUEST) {
-                        if (cmndCode == PRE_SET_DIM) {
+                        if (cmndCode == STATUS_REQUEST) {
+//                        if (cmndCode == PRE_SET_DIM) {
                         Serial.print("Temp requested for ");
 				Serial.print(houseCode, DEC);
 				Serial.println("");
