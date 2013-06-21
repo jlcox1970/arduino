@@ -135,9 +135,9 @@ int x10::version(void)
   return 3;
 }
 
-void x10::x10temp (byte temp_houseCode, byte tmep_Unit, int count, int RPT_SEND){
+void x10::x10temp (byte temp_houseCode, byte temp_Unit, int count, int RPT_SEND){
 	detachInterrupt(0);                  // must detach interrupt before sending
-          x10::write(temp_houseCode ,tmep_Unit ,RPT_SEND);  
+          x10::write(temp_houseCode ,temp_Unit ,RPT_SEND);
           x10::write(temp_houseCode ,UNIT_13 ,RPT_SEND);
           switch (count) {
             case 0:

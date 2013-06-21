@@ -144,7 +144,7 @@ void loop() {
                         Serial.print("Temp requested for ");
 				Serial.print(houseCode, DEC);
 				Serial.println("");
-				SendX10.x10temp(houseCode, unitCode, count, 2);
+                                SendX10.x10temp(houseCode, unitCode, tempValue, 2);
 				attachInterrupt(0, Check_Rcvr, CHANGE);	// re-attach interrupt
 				pause = 0;
 			}
