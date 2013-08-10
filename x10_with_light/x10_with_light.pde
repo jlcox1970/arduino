@@ -67,7 +67,7 @@ void loop() {
 	if (pause == 1000) {
                 //Serial.print("bit value  ");
                 //Serial.print(bit_val, DEC);
-                Serial.println("");
+                //Serial.println("");
 			if (old_val < tempValue - 2) {
 			newX10 = true;
 			unitCode = 16;
