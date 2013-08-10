@@ -138,7 +138,7 @@ void loop() {
 				attachInterrupt(0, Check_Rcvr, CHANGE);	// re-attach interrupt
 			}
 		}
-		if (unitCode == 16 && houseCode == 65) {
+		if (unitCode == 5 && houseCode == 77) {
                         if (cmndCode == STATUS_REQUEST) {
 //                        if (cmndCode == PRE_SET_DIM) {
                         Serial.print("Temp requested for ");
