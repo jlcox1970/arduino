@@ -64,7 +64,7 @@ void loop() {
 
 	tempValue = (ref_val * 0.0048876) * 10;
 	count = tempValue - 4;
-	if (pause == 1000) {
+	if (pause == 100) {
                 Serial.print("bit value  ");
                 Serial.print(bit_val, DEC);
                 Serial.println("");
