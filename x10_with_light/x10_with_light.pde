@@ -143,6 +143,8 @@ void loop() {
 //                        if (cmndCode == PRE_SET_DIM) {
                         Serial.print("Temp requested for ");
 				Serial.print(houseCode, DEC);
+				Serial.print(" : temp = ");
+				Serial.print(tempValue, DEC);
 				Serial.println("");
                                 SendX10.x10temp(houseCode, unitCode, tempValue, 2);
 				attachInterrupt(0, Check_Rcvr, CHANGE);	// re-attach interrupt
