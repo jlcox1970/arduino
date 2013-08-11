@@ -12,7 +12,7 @@ void setup() {
 	pinMode(LED_PIN, OUTPUT); 			// onboard LED
 	pinMode(control_pin, OUTPUT);
 	pinMode(RCVE_PIN, INPUT); 			// receive X10 commands - low = 1
-        pinMode(TRANS_PIN, OUTPUT);
+        pinMode(dataPin, OUTPUT);
         pinMode(ZCROSS_PIN, INPUT); 		// zero crossing - 60 Hz square wave
 	digitalWrite(RCVE_PIN, HIGH); 		// set 20K pullup (low active signal)
 	digitalWrite(ZCROSS_PIN, HIGH); 	// set 20K pullup (low active signal)
