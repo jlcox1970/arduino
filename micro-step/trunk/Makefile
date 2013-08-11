@@ -8,4 +8,4 @@ ARDUINO_PORT = /dev/ttyS0
 
 ARDUINO_LIBS = 
 
-include /data/arduino-mk-0.5/Arduino.mk
+include /data/arduino-mk-latest/Arduino.mk

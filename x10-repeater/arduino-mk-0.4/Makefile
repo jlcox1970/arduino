@@ -7,4 +7,4 @@ SERIALDEV = /dev/cu.usb*
 
 ARDUINO_LIBS = LiquidCrystal
 
-include /path/to/my/arduino/stuff/Arduino.mk
+include /data/arduino-mk-latest/Arduino.mk

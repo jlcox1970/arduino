@@ -8,4 +8,4 @@ VR_TOOLS_PATH = /usr/bin/
 
 ARDUINO_LIBS = x10
 
-include /data/arduino-mk-0.5/Arduino.mk
+include /data/arduino-mk-latest/Arduino.mk
