@@ -1,4 +1,3 @@
-#include "WProgram.h"
 #include "x10.h"
 #include "x10constants.h"
 #define zcPin 2
