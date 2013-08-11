@@ -1,19 +1,11 @@
 /*
-  x10.cpp - X10 transmission library for Arduino version 0.4
+  x10.cpp - X10 transmission library for Arduino version 0.3
   
- Copyright (c) 2007 by Tom Igoe (tom.igoe@gmail.com)
+  Original library				(0.1) by Tom Igoe.
+  Timing bug fixes				(0.2) "   "   "
+  #include bug fixes for 0012			(0.3) "   "   "
+  Temperature Sensing				(0.4) by Jason Cox
 
-This file is free software; you can redistribute it and/or modify
-it under the terms of either the GNU General Public License version 2
-or the GNU Lesser General Public License version 2.1, both as
-published by the Free Software Foundation.
-
-  
-  Original library								(0.1) 
-  Timing bug fixes								(0.2)
-  #include bug fixes for 0012					(0.3)
-  Refactored version following Wire lib API		(0.4)
-    
   Zero crossing algorithms borrowed from David Mellis' shiftOut command
   for Arduino.
   
@@ -24,16 +16,10 @@ http://www.arduino.cc/en/Tutorial/x10
  
  */
 
-#include <Arduino.h>
+#include <stdlib.h>
+#include "WProgram.h"
 #include "x10.h"
 #include "x10constants.h"
-
-uint8_t x10Class::zeroCrossingPin = 2;	// AC zero crossing pin
-uint8_t x10Class::rxPin = 3;			// data in pin
-uint8_t x10Class::txPin = 4;			// data out pin
-
-uint8_t x10Class::houseCode = 0;		// house code
-uint8_t x10Class::transmitting = 0;		// whether you're transmitting or not
 
 
 /*
@@ -42,124 +28,59 @@ uint8_t x10Class::transmitting = 0;		// whether you're transmitting or not
  Sets the pins and sets their I/O modes.
  
  */
- 
-x10Class::x10Class() {}
-
-
-void x10Class::begin(int _rxPin, int _txPin, int _zcPin)
+x10::x10(int zeroCrossingPin, int dataPin)
 {
-  // initialize pin numbers:
-  txPin = _txPin;        		
-  rxPin = _rxPin;        	
-  zeroCrossingPin = _zcPin;			
-  houseCode = 0;				  
-  transmitting = 0;			
-
+  this->zeroCrossingPin = zeroCrossingPin;      // the zero crossing pin
+  this->dataPin = dataPin;        				// the output data pin
+  
   // Set I/O modes:
-  pinMode(rxPin, INPUT);
-  pinMode(txPin, OUTPUT);
-  pinMode (zeroCrossingPin, INPUT);
+  pinMode(this->zeroCrossingPin, INPUT);
+  pinMode(this->dataPin, OUTPUT);
 }
 
-void x10Class::beginTransmission(uint8_t data)
-{
-	houseCode = data;
-	transmitting = 1;
-}
 
-void x10Class::beginTransmission(int data)
-{
-	 beginTransmission((uint8_t)data);
-
-}
-
-void x10Class::endTransmission(void)
-{
-   // indicate that we are done transmitting
-  transmitting = 0;
-}
-
-    
-size_t x10Class::write(uint8_t data)
-{
-	if (transmitting) {
-		sendCommand(houseCode, data);
-	}
-}
-size_t x10Class::write(const char * data)
-{
- write((uint8_t*)data, strlen(data));
-}
-
-size_t x10Class::write(const uint8_t *data, size_t quantity)
-{
-    for(size_t i = 0; i < quantity; ++i){
-      write(data[i]);
-    }
-}
-
-/*
-	methods inherited from Stream but not implemented yet.
-*/
-
-int x10Class::available(void)
-{
-}
-
-int x10Class::read(void)
-{
-}
-
-int x10Class::peek(void)
-{
-}
-
-void x10Class::flush(void)
-{
-}
 
 /*
 	Writes an X10 command out to the X10 modem
 */
-void x10Class::sendCommand(byte houseCode, byte numberCode) {
- 
-   byte startCode = 0b1110; 		// every X10 command starts with this
-   
-	// send the three parts of the command:
-	sendBits(startCode, 4, true);	
-	sendBits(houseCode, 4, false);
-	sendBits(numberCode, 5, false);
+void x10::write(byte houseCode, byte numberCode, int numRepeats) {
+  byte startCode = B1110; 		// every X10 command starts with this
 
+	// repeat as many times as requested:
+ 	for (int i = 0; i < numRepeats; i++) {
+		// send the three parts of the command:
+ 		sendBits(startCode, 4, true);	
+  		sendBits(houseCode, 4, false);
+  		sendBits(numberCode, 5, false);
+  	}
   	// if this isn't a bright or dim command, it should be followed by
   	// a delay of 3 power cycles (or 6 zero crossings):
   	if ((numberCode != BRIGHT) && (numberCode != DIM)) {
-  		waitForZeroCross(zeroCrossingPin, 6);
-   	}
+  		waitForZeroCross(this->zeroCrossingPin, 6);
+  	}
 }
-
-
 /*
 	Writes a sequence of bits out.  If the sequence is not a start code,
 	it repeats the bits, inverting them.
 */
 
-void x10Class::sendBits(byte cmd, byte numBits, byte isStartCode) {
-  	byte thisBit;	// byte for shifting bits
+void x10::sendBits(byte cmd, byte numBits, byte isStartCode) {
+  byte thisBit;		// copy of command so we can shift bits
   
 	// iterate the number of bits to be shifted:
 	for(int i=1; i<=numBits; i++) {
-		// wait for a zero crossing change
-		waitForZeroCross(zeroCrossingPin, 1);
+		// wait for a zero crossing change:
+		waitForZeroCross(this->zeroCrossingPin, 1);
 		// shift off the last bit of the command:
-		thisBit = cmd & (1 << (numBits - i));
+		thisBit = !!(cmd & (1 << (numBits - i)));
 		
 		// repeat once for each phase:
 		for (int phase = 0; phase < 3; phase++) {
 			// set the data Pin:
-			digitalWrite(txPin, thisBit);
+			digitalWrite(this->dataPin, thisBit);
 			delayMicroseconds(BIT_LENGTH);
 			// clear the data pin:
-			digitalWrite(txPin, LOW);
+			digitalWrite(this->dataPin, LOW);
 			delayMicroseconds(BIT_DELAY);
 		}
 		
@@ -170,25 +91,22 @@ void x10Class::sendBits(byte cmd, byte numBits, byte isStartCode) {
 			waitForZeroCross(zeroCrossingPin, 1);
 			for (int phase = 0; phase < 3; phase++) {
 				// set the data pin:
-				digitalWrite(txPin, !thisBit);
+				digitalWrite(this->dataPin, !thisBit);
 				delayMicroseconds(BIT_LENGTH);
 				// clear the data pin:
-				digitalWrite(txPin, LOW);
+				digitalWrite(dataPin, LOW);
 				delayMicroseconds(BIT_DELAY);
 			}
 		}
 	}
 }
 
-/*
-	TO DO: receiveBits and receiveCommand to parallel the above
-*/
 
 /*
   waits for a the zero crossing pin to cross zero
 
 */
-void x10Class::waitForZeroCross(int pin, int howManyTimes) {
+void x10::waitForZeroCross(int pin, int howManyTimes) {
 	unsigned long cycleTime = 0;
 	
   	// cache the port and bit of the pin in order to speed up the
@@ -208,5 +126,116 @@ void x10Class::waitForZeroCross(int pin, int howManyTimes) {
   		}
 }
 
-// pre-instantiate class:
-x10Class x10 = x10Class();
+
+/*
+  version() returns the version of the library:
+*/
+int x10::version(void)
+{
+  return 3;
+}
+
+void x10::x10temp (byte temp_houseCode, byte tmep_Unit, int count, int RPT_SEND){
+	detachInterrupt(0);                  // must detach interrupt before sending
+          x10::write(temp_houseCode ,tmep_Unit ,RPT_SEND);  
+          x10::write(temp_houseCode ,UNIT_13 ,RPT_SEND);
+          switch (count) {
+            case 0:
+              x10::write(M,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 1:
+              x10::write(N,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 2:
+              x10::write(O,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 3:
+              x10::write(P,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 4:
+              x10::write(C,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 5:
+              x10::write(D,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 6:
+              x10::write(A,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 7:
+              x10::write(B,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 8:
+              x10::write(E,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 9:
+              x10::write(F,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 10:
+              x10::write(G,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 11:
+              x10::write(H,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 12:
+              x10::write(K,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 13:
+              x10::write(L,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 14:
+              x10::write(I,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 15:
+              x10::write(J,PRE_SET_DIM,RPT_SEND);
+              break;
+            case 16:
+              x10::write(M,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 17:
+              x10::write(N,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 18:
+              x10::write(O,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 19:
+              x10::write(P,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 20:
+              x10::write(C,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 21:
+              x10::write(D,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 22:
+              x10::write(A,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 23:
+              x10::write(B,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 24:
+              x10::write(E,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 25:
+              x10::write(F,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 26:
+              x10::write(G,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 27:
+              x10::write(H,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 28:
+              x10::write(K,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 29:
+              x10::write(L,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 30:
+              x10::write(I,PRE_SET_DIM2,RPT_SEND);
+              break;
+            case 31:
+              x10::write(J,PRE_SET_DIM2,RPT_SEND);
+              break;
+          
+	  }
+}

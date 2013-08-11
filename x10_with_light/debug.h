@@ -1,5 +1,4 @@
 void X10_Debug() {
-        Serial.println("Debug");
 	Serial.print("SC-");
 	Serial.print(startCode, BIN);
 	Serial.print(" HOUSE-");

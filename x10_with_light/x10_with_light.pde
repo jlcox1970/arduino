@@ -8,7 +8,7 @@
  * - Must detach interrup when transmitting with X10    Lib 
  */
 
-#include "Arduino.h"                  // this is needed to compile with Rel. 0013
+#include "WProgram.h"                  // this is needed to compile with Rel. 0013
 #include <x10.h>                       // X10 lib is used for transmitting X10
 #include <x10constants.h>              // X10 Lib constants
 #define RPT_SEND 1                     // how many times transmit repeats if noisy set higher
@@ -21,7 +21,7 @@
 //#define temp_pin       A5
 //#define ref_vcc        A4
 #define DC_TRANS_PIN	8				// DC Bus data out
-#define DC_RCVE_PIN	6				// DC Bus data in
+#define DC_RCVE_PIN		6				// DC Bus data in
 #define DC_CLOCK_PIN	7				// DC_Bus Clock
 
 volatile unsigned long mask; // MSB first - bit 12 - bit 0
@@ -65,9 +65,9 @@ void loop() {
 	tempValue = (ref_val * 0.0048876) * 10;
 	count = tempValue - 4;
 	if (pause == 1000) {
-                //Serial.print("bit value  ");
-                //Serial.print(bit_val, DEC);
-                //Serial.println("");
+//		Serial.print("bit value  ");
+//		Serial.print(bit_val, DEC);
+//		Serial.println("");
 			if (old_val < tempValue - 2) {
 			newX10 = true;
 			unitCode = 16;
@@ -138,15 +138,12 @@ void loop() {
 				attachInterrupt(0, Check_Rcvr, CHANGE);	// re-attach interrupt
 			}
 		}
-		if (unitCode == 5 && houseCode == 77) {
-                        if (cmndCode == STATUS_REQUEST) {
-//                        if (cmndCode == PRE_SET_DIM) {
-                        Serial.print("Temp requested for ");
+		if (unitCode == 16 && houseCode == 65) {
+			if (cmndCode == STATUS_REQUEST) {
+				Serial.print("Temp requested for ");
 				Serial.print(houseCode, DEC);
-				Serial.print(" : temp = ");
-				Serial.print(tempValue, DEC);
 				Serial.println("");
-                                SendX10.x10temp(houseCode, unitCode, tempValue, 2);
+				SendX10.x10temp(houseCode, unitCode, count, 2);
 				attachInterrupt(0, Check_Rcvr, CHANGE);	// re-attach interrupt
 				pause = 0;
 			}

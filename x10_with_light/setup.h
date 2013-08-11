@@ -1,7 +1,7 @@
 /*
-$Rev$
-$Author$
-$Date$
+$Rev: 41 $
+$Author: jason $
+$Date: 2012-06-02 16:25:55 +1000 (Sat, 02 Jun 2012) $
 */
 
 
