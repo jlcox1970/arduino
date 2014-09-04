@@ -46,7 +46,7 @@ int temp_pin = A5;
 int ref_vcc = A4;
 
 
-x10 SendX10 = x10(ZCROSS_PIN, TRANS_PIN);// set up a x10 library instance:
+x10 SendX10 = x10(ZCROSS_PIN, dataPin);// set up a x10 library instance:
 
 #include "Parse_frame.h"
 #include "x10_check_rcvr.h"
