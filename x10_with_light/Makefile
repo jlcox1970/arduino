@@ -2,7 +2,7 @@ ARDUINO_DIR = /usr/share/arduino/
 
   
 TARGET       = CLItest
-MCU          = atmega328p
+MCU          = atmega32u4
 F_CPU        = 16000000
 SERIAL_PORT = /dev/ttyS0
 AVR_TOOLS_PATH = /usr/bin/
