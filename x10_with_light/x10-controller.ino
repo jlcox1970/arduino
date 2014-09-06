@@ -17,7 +17,7 @@
 #define ZCROSS_PIN     PD2               // BLK pin 1 of PSC05
 #define LED_PIN        8              // for testing. Blinks with command received
 #define control_pin    9  
-#define temp_pin       A5
+#define temp_pin       A3
 #define ref_vcc        A4
 #define DC_TRANS_PIN	8				// DC Bus data out
 #define DC_RCVE_PIN		6				// DC Bus data in
