@@ -7,7 +7,7 @@ $Date: 2012-06-02 16:25:55 +1000 (Sat, 02 Jun 2012) $
 
 
 void setup() {
-	attachInterrupt(0, Check_Rcvr, CHANGE);// (pin 2) trigger zero cross
+	attachInterrupt(1, Check_Rcvr, CHANGE);// (pin 2) trigger zero cross
 	Serial.begin(9600);
 	pinMode(LED_PIN, OUTPUT); 			// onboard LED
 	pinMode(control_pin, OUTPUT);

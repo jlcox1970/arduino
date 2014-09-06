@@ -12,10 +12,10 @@
 #include <x10constants.h>              // X10 Lib constants
 #define RPT_SEND 1                     // how many times transmit repeats if noisy set higher
 #include <psc05.h>                     // constants for PSC05 X10 Receiver
-#define dataPin      5               // YEL pin 4 of PSC05
-#define RCVE_PIN       4               // GRN pin 3 of PSC05
-#define ZCROSS_PIN     2               // BLK pin 1 of PSC05
-#define LED_PIN        13              // for testing. Blinks with command received
+#define dataPin        PD0              // YEL pin 4 of PSC05
+#define RCVE_PIN       PD1               // GRN pin 3 of PSC05
+#define ZCROSS_PIN     PD2               // BLK pin 1 of PSC05
+#define LED_PIN        8              // for testing. Blinks with command received
 #define control_pin    9  
 //#define temp_pin       A5
 //#define ref_vcc        A4
