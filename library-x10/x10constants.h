@@ -6,22 +6,22 @@
 #define BIT_DELAY 2133    	// 1778 us between bit repeats in a half-cycle
 #define BIT_LENGTH 900		// each bit is slightly less than 1ms long
 
-#define	A	B0110
-#define	B	B1110	
-#define	C	B0010
-#define	D	B1010
-#define	E	B0001
-#define	F	B1001
-#define	G	B0101
-#define	H	B1101
-#define	I	B0111
-#define	J	B1111
-#define	K	B0011
-#define	L	B1011
-#define	M	B0000
-#define	N	B1000
-#define O	B0100
-#define P	B1100
+#define	HC_A	B0110
+#define	HC_B	B1110
+#define	HC_C	B0010
+#define	HC_D	B1010
+#define	HC_E	B0001
+#define	HC_F	B1001
+#define	HC_G	B0101
+#define	HC_H	B1101
+#define	HC_I	B0111
+#define	HC_J	B1111
+#define	HC_K	B0011
+#define	HC_L	B1011
+#define	HC_M	B0000
+#define	HC_N	B1000
+#define HC_O	B0100
+#define HC_P	B1100
 
 #define UNIT_1	B01100
 #define UNIT_2	B11100

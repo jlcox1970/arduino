@@ -141,100 +141,100 @@ void x10::x10temp (byte temp_houseCode, byte tmep_Unit, int count, int RPT_SEND)
           x10::write(temp_houseCode ,UNIT_13 ,RPT_SEND);
           switch (count) {
             case 0:
-              x10::write(M,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_M,PRE_SET_DIM,RPT_SEND);
               break;
             case 1:
-              x10::write(N,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_N,PRE_SET_DIM,RPT_SEND);
               break;
             case 2:
-              x10::write(O,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_O,PRE_SET_DIM,RPT_SEND);
               break;
             case 3:
-              x10::write(P,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_P,PRE_SET_DIM,RPT_SEND);
               break;
             case 4:
-              x10::write(C,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_C,PRE_SET_DIM,RPT_SEND);
               break;
             case 5:
-              x10::write(D,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_D,PRE_SET_DIM,RPT_SEND);
               break;
             case 6:
-              x10::write(A,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_A,PRE_SET_DIM,RPT_SEND);
               break;
             case 7:
-              x10::write(B,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_B,PRE_SET_DIM,RPT_SEND);
               break;
             case 8:
-              x10::write(E,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_E,PRE_SET_DIM,RPT_SEND);
               break;
             case 9:
-              x10::write(F,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_F,PRE_SET_DIM,RPT_SEND);
               break;
             case 10:
-              x10::write(G,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_G,PRE_SET_DIM,RPT_SEND);
               break;
             case 11:
-              x10::write(H,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_H,PRE_SET_DIM,RPT_SEND);
               break;
             case 12:
-              x10::write(K,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_K,PRE_SET_DIM,RPT_SEND);
               break;
             case 13:
-              x10::write(L,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_L,PRE_SET_DIM,RPT_SEND);
               break;
             case 14:
-              x10::write(I,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_I,PRE_SET_DIM,RPT_SEND);
               break;
             case 15:
-              x10::write(J,PRE_SET_DIM,RPT_SEND);
+              x10::write(HC_J,PRE_SET_DIM,RPT_SEND);
               break;
             case 16:
-              x10::write(M,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_M,PRE_SET_DIM2,RPT_SEND);
               break;
             case 17:
-              x10::write(N,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_N,PRE_SET_DIM2,RPT_SEND);
               break;
             case 18:
-              x10::write(O,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_O,PRE_SET_DIM2,RPT_SEND);
               break;
             case 19:
-              x10::write(P,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_P,PRE_SET_DIM2,RPT_SEND);
               break;
             case 20:
-              x10::write(C,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_C,PRE_SET_DIM2,RPT_SEND);
               break;
             case 21:
-              x10::write(D,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_D,PRE_SET_DIM2,RPT_SEND);
               break;
             case 22:
-              x10::write(A,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_A,PRE_SET_DIM2,RPT_SEND);
               break;
             case 23:
-              x10::write(B,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_B,PRE_SET_DIM2,RPT_SEND);
               break;
             case 24:
-              x10::write(E,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_E,PRE_SET_DIM2,RPT_SEND);
               break;
             case 25:
-              x10::write(F,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_F,PRE_SET_DIM2,RPT_SEND);
               break;
             case 26:
-              x10::write(G,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_G,PRE_SET_DIM2,RPT_SEND);
               break;
             case 27:
-              x10::write(H,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_H,PRE_SET_DIM2,RPT_SEND);
               break;
             case 28:
-              x10::write(K,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_K,PRE_SET_DIM2,RPT_SEND);
               break;
             case 29:
-              x10::write(L,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_L,PRE_SET_DIM2,RPT_SEND);
               break;
             case 30:
-              x10::write(I,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_I,PRE_SET_DIM2,RPT_SEND);
               break;
             case 31:
-              x10::write(J,PRE_SET_DIM2,RPT_SEND);
+              x10::write(HC_J,PRE_SET_DIM2,RPT_SEND);
               break;
           
 	  }
