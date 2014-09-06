@@ -88,22 +88,22 @@ void loop() {
 		if (unitCode == 1 && houseCode == 65) {
 			if (cmndCode == ON) {
 				detachInterrupt(0); 			// must detach interrupt before sending
-				SendX10.write(D, UNIT_5, RPT_SEND);
-				SendX10.write(D, ON, RPT_SEND);
+				SendX10.write(HC_D, UNIT_5, RPT_SEND);
+				SendX10.write(HD_D, ON, RPT_SEND);
 				myX10D1 = ON;
 				attachInterrupt(0, Check_Rcvr, CHANGE);// re-attach interrupt
 			}
 			if (cmndCode == OFF) {
 				detachInterrupt(0); 			// must detach interrupt before sending
-				SendX10.write(D, UNIT_5, RPT_SEND);
-				SendX10.write(D, OFF, RPT_SEND);
+				SendX10.write(HC_D, UNIT_5, RPT_SEND);
+				SendX10.write(HC_D, OFF, RPT_SEND);
 				myX10D1 = OFF;
 				attachInterrupt(0, Check_Rcvr, CHANGE);// re-attach interrupt
 			}
 			if (cmndCode == STATUS_REQUEST) {
 				detachInterrupt(0); 			// must detach interrupt before sending
-				SendX10.write(A, UNIT_1, RPT_SEND);
-				SendX10.write(A, myX10D1, RPT_SEND);
+				SendX10.write(HC_A, UNIT_1, RPT_SEND);
+				SendX10.write(HC_A, myX10D1, RPT_SEND);
 				attachInterrupt(0, Check_Rcvr, CHANGE);// re-attach interrupt
 			}
 		}
@@ -132,8 +132,8 @@ void loop() {
 			}
 			if (cmndCode == STATUS_REQUEST) {
 				detachInterrupt(0); 					// must detach interrupt before sending
-				SendX10.write(B, UNIT_1, RPT_SEND);
-				SendX10.write(B, myX10B1, RPT_SEND);
+				SendX10.write(HC_B, UNIT_1, RPT_SEND);
+				SendX10.write(HC_B, myX10B1, RPT_SEND);
 				attachInterrupt(0, Check_Rcvr, CHANGE);	// re-attach interrupt
 			}
 		}
