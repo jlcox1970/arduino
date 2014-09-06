@@ -89,7 +89,7 @@ void loop() {
 			if (cmndCode == ON) {
 				detachInterrupt(0); 			// must detach interrupt before sending
 				SendX10.write(HC_D, UNIT_5, RPT_SEND);
-				SendX10.write(HD_D, ON, RPT_SEND);
+				SendX10.write(HC_D, ON, RPT_SEND);
 				myX10D1 = ON;
 				attachInterrupt(0, Check_Rcvr, CHANGE);// re-attach interrupt
 			}
