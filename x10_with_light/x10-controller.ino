@@ -42,9 +42,6 @@ int pause = 0;
 int brightness = 0; 					// how bright the LED is
 int fadeAmount = 255 / 8; 				// how many points to fade the LED by
 float bit_val;
-int temp_pin = A5;
-int ref_vcc = A4;
-
 
 x10 SendX10 = x10(ZCROSS_PIN, dataPin);// set up a x10 library instance:
 
