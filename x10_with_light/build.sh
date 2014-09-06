@@ -5,4 +5,3 @@ make clean
 make
 make  upload
 rm -fr build-cli*
-
