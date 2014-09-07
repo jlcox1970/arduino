@@ -23,6 +23,23 @@
 #define HC_O	B0100
 #define HC_P	B1100
 
+#define HOUSE_A 65
+#define HOUSE_B 66
+#define HOUSE_C 67
+#define HOUSE_D 68
+#define HOUSE_E 69
+#define HOUSE_F 70
+#define HOUSE_G 71
+#define HOUSE_H 72
+#define HOUSE_I 73
+#define HOUSE_J 74
+#define HOUSE_K 75
+#define HOUSE_L 76
+#define HOUSE_M 77
+#define HOUSE_N 78
+#define HOUSE_O 79
+#define HOUSE_P 80
+
 #define UNIT_1	B01100
 #define UNIT_2	B11100
 #define UNIT_3	B00100
