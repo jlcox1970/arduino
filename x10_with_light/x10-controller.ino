@@ -15,7 +15,9 @@
 #define dataPin        PD0              // YEL pin 4 of PSC05
 #define RCVE_PIN       PD1               // GRN pin 3 of PSC05
 #define ZCROSS_PIN     PD2               // BLK pin 1 of PSC05
-#define LED_PIN        8              // for testing. Blinks with command received
+#define LED_PIN        8              // Green LED
+#define LED2_PIN       10		// Blue LED
+#define LED3_PIN       13		// Red LED
 #define control_pin    9  
 #define temp_pin       A3
 #define ref_vcc        A4
@@ -60,17 +62,17 @@ void loop() {
 
 	tempValue = (ref_val * 0.0048876) * 10;
 	count = tempValue - 4;
-	if (pause == 1000) {
+	if (pause == 10000) {
 //		Serial.print("bit value  ");
 //		Serial.print(bit_val, DEC);
 //		Serial.println("");
-			if (old_val < tempValue - 2) {
+//			if (old_val < tempValue ) {
 			newX10 = true;
 			unitCode = 16;
 			houseCode = 65;
 			cmndCode = STATUS_REQUEST;
-		}
-		if (old_val > tempValue + 2) {
+//		}
+		if (old_val > tempValue ) {
 			newX10 = true;
 			unitCode = 16;
 			houseCode = 65;
@@ -84,27 +86,32 @@ void loop() {
 		newX10 = false;
 		if (unitCode == 1 && houseCode == 65) {
 			if (cmndCode == ON) {
-				detachInterrupt(0); 			// must detach interrupt before sending
-				SendX10.write(HC_D, UNIT_5, RPT_SEND);
-				SendX10.write(HC_D, ON, RPT_SEND);
+				detachInterrupt(1); 			// must detach interrupt before sending
+				SendX10.write(68, UNIT_5, RPT_SEND);
+				SendX10.write(68, ON, RPT_SEND);
 				myX10D1 = ON;
-				attachInterrupt(0, Check_Rcvr, CHANGE);// re-attach interrupt
+				attachInterrupt(1, Check_Rcvr, CHANGE);// re-attach interrupt
 			}
 			if (cmndCode == OFF) {
-				detachInterrupt(0); 			// must detach interrupt before sending
-				SendX10.write(HC_D, UNIT_5, RPT_SEND);
-				SendX10.write(HC_D, OFF, RPT_SEND);
+				detachInterrupt(1); 			// must detach interrupt before sending
+				SendX10.write(68, UNIT_5, RPT_SEND);
+				SendX10.write(68, OFF, RPT_SEND);
 				myX10D1 = OFF;
-				attachInterrupt(0, Check_Rcvr, CHANGE);// re-attach interrupt
+				attachInterrupt(1, Check_Rcvr, CHANGE);// re-attach interrupt
 			}
 			if (cmndCode == STATUS_REQUEST) {
-				detachInterrupt(0); 			// must detach interrupt before sending
-				SendX10.write(HC_A, UNIT_1, RPT_SEND);
-				SendX10.write(HC_A, myX10D1, RPT_SEND);
-				attachInterrupt(0, Check_Rcvr, CHANGE);// re-attach interrupt
+				detachInterrupt(1); 			// must detach interrupt before sending
+				SendX10.write(65, UNIT_1, RPT_SEND);
+				SendX10.write(65, myX10D1, RPT_SEND);
+				attachInterrupt(1, Check_Rcvr, CHANGE);// re-attach interrupt
 			}
 		}
-		if (unitCode == 1 && houseCode == 66) {
+		Serial.print( " houseCode " );
+		Serial.println( houseCode );
+		Serial.print( " unitCode " );
+		Serial.println( unitCode );
+		
+		if (unitCode == 1 && houseCode == 66 ) {
 			if (cmndCode == ON) {
 				analogWrite(control_pin, 255);
 				brightness = 255;
@@ -128,10 +135,11 @@ void loop() {
 				analogWrite(control_pin, brightness);
 			}
 			if (cmndCode == STATUS_REQUEST) {
-				detachInterrupt(0); 					// must detach interrupt before sending
-				SendX10.write(HC_B, UNIT_1, RPT_SEND);
-				SendX10.write(HC_B, myX10B1, RPT_SEND);
-				attachInterrupt(0, Check_Rcvr, CHANGE);	// re-attach interrupt
+				Serial.println("status request for B1");
+				detachInterrupt(1); 					// must detach interrupt before sending
+				SendX10.write(65, UNIT_1, RPT_SEND);
+				SendX10.write(65, myX10B1, RPT_SEND);
+				attachInterrupt(1, Check_Rcvr, CHANGE);	// re-attach interrupt
 			}
 		}
 		if (unitCode == 16 && houseCode == 65) {
@@ -139,8 +147,9 @@ void loop() {
 				Serial.print("Temp requested for ");
 				Serial.print(houseCode, DEC);
 				Serial.println("");
+				detachInterrupt(1); 					// must detach interrupt before sending
 				SendX10.x10temp(houseCode, unitCode, count, 2);
-				attachInterrupt(0, Check_Rcvr, CHANGE);	// re-attach interrupt
+				attachInterrupt(1, Check_Rcvr, CHANGE);	// re-attach interrupt
 				pause = 0;
 			}
 		}
