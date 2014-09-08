@@ -4,7 +4,7 @@
 #define HIGH 0x1
 #define LOW  0x0
 #define BIT_DELAY 2133    	// 1778 us between bit repeats in a half-cycle
-#define BIT_LENGTH 900		// each bit is slightly less than 1ms long
+#define BIT_LENGTH 980		// each bit is slightly less than 1ms long
 
 #define	HC_A	B0110
 #define	HC_B	B1110

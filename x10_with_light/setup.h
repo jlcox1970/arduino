@@ -21,4 +21,5 @@ void setup() {
 	pinMode(DC_CLOCK_PIN, OUTPUT);
 	digitalWrite(DC_TRANS_PIN, HIGH);
 	digitalWrite(DC_CLOCK_PIN, HIGH);
+	dht.begin();
 }

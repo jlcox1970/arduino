@@ -11,7 +11,7 @@ ARDUINO_DIR = /usr/share/arduino/
   USB_VID = 0x26ba
   USB_PID = 0x8003
   ISP_PROG = -c arduino
-  ARDUINO_LIBS = x10
+  ARDUINO_LIBS = x10 DHT
   BOARD_TAG = leonardo
   BOARD_SUB = atmega32u4
 

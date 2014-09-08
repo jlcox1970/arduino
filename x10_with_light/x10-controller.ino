@@ -8,80 +8,78 @@
  * - Must detach interrup when transmitting with X10    Lib 
  */
 
-#include <x10.h>                       // X10 lib is used for transmitting X10
-#include <x10constants.h>              // X10 Lib constants
-#define RPT_SEND 1                     // how many times transmit repeats if noisy set higher
-#include <psc05.h>                     // constants for PSC05 X10 Receiver
-#define dataPin        PD0              // YEL pin 4 of PSC05
-#define RCVE_PIN       PD1               // GRN pin 3 of PSC05
-#define ZCROSS_PIN     PD2               // BLK pin 1 of PSC05
-#define LED_PIN        8              // Green LED
-#define LED2_PIN       10		// Blue LED
-#define LED3_PIN       13		// Red LED
+#include <x10.h>                // X10 lib is used for transmitting X10
+#include <x10constants.h>       // X10 Lib constants
+#include "DHT.h"
+#include <psc05.h>              // constants for PSC05 X10 Receiver
+
+#define RPT_SEND 	2       // how many times transmit repeats if noisy set higher
+#define dataPin        PD0      // YEL pin 4 of PSC05
+#define RCVE_PIN       PD1      // GRN pin 3 of PSC05
+#define ZCROSS_PIN     PD2      // BLK pin 1 of PSC05
+#define DHTPIN 	       PD3	// what pin we're connected to for DHT22
+#define LED_PIN        8        // Green LED
+#define LED2_PIN       10	// Blue LED
+#define LED3_PIN       13	// Red LED
 #define control_pin    9  
 #define temp_pin       A3
 #define ref_vcc        A4
-#define DC_TRANS_PIN	8				// DC Bus data out
-#define DC_RCVE_PIN		6				// DC Bus data in
-#define DC_CLOCK_PIN	7				// DC_Bus Clock
+#define DC_TRANS_PIN	8	// DC Bus data out
+#define DC_RCVE_PIN 	6	// DC Bus data in
+#define DC_CLOCK_PIN	7	// DC_Bus Clock
+#define DHTTYPE 	DHT22  	// DHT 22  (AM2302)
 
-volatile unsigned long mask; // MSB first - bit 12 - bit 0
-volatile unsigned int X10BitCnt = 0; // counts bit sequence in frame
-volatile unsigned int ZCrossCnt = 0; // counts Z crossings in frame
-volatile unsigned long rcveBuff; // holds the 13 bits received in a frame
-volatile boolean X10rcvd = false; // true if a new frame has been received
-boolean newX10 = false; // both the unit frame and the command frame received
-byte houseCode, unitCode, cmndCode; // current house, unit, and command code
-byte startCode; // only needed for testing - sb B1110 (14)
-boolean myX10D1; // my state
-boolean myX10B1; // my state
-int tempValue = 0;
-int ref_val = 0;
-int count = 0;
+volatile unsigned long mask; 		// MSB first - bit 12 - bit 0
+volatile unsigned int X10BitCnt = 0; 	// counts bit sequence in frame
+volatile unsigned int ZCrossCnt = 0; 	// counts Z crossings in frame
+volatile unsigned long rcveBuff; 	// holds the 13 bits received in a frame
+volatile boolean X10rcvd = false; 	// true if a new frame has been received
+boolean newX10 	= false; 		// both the unit frame and the command frame received
+boolean newX10temp 	= false; 		// both the unit frame and the command frame received
+byte houseCode, unitCode, cmndCode, stateCode; 	// current house, unit, and command code
+byte startCode; 			// only needed for testing - sb B1110 (14)
+bool myX10D1, myX10B1; 	// my state
+int tempValue 	= 0;
+int count 	= 0;
 byte out_put;
-int old_val = 0;
-int pause = 0;
-int brightness = 0; 					// how bright the LED is
-int fadeAmount = 255 / 8; 				// how many points to fade the LED by
-float bit_val;
+int old_val 	= 0;
+int pause 	= 0;
+int brightness 	= 0; 			// how bright the LED is
+int fadeAmount 	= 255 / 8; 		// how many points to fade the LED by
+int sendtemp   	= 0;
+int x10_write  	= 0;
+float t, h;
 
-x10 SendX10 = x10(ZCROSS_PIN, dataPin);// set up a x10 library instance:
+x10 SendX10 = x10(ZCROSS_PIN, dataPin);	// set up a x10 library instance:
+DHT dht(DHTPIN, DHTTYPE);
 
 #include "Parse_frame.h"
 #include "x10_check_rcvr.h"
 #include "debug.h"
 #include "setup.h"
 
-
-
-
 void loop() {
-	ref_val = analogRead(temp_pin);
-	bit_val = analogRead(ref_vcc) / 1.7;
-
-
-	tempValue = (ref_val * 0.0048876) * 10;
-	//count = tempValue - 4;
-	count = 21;
-	if (pause == 20000) {
-//		Serial.print("bit value  ");
-//		Serial.print(bit_val, DEC);
-//		Serial.println("");
-//			if (old_val < tempValue ) {
-			newX10 = true;
-			unitCode = 5;
-			houseCode = HOUSE_A;
-			cmndCode = STATUS_REQUEST;
-//		}
-		if (old_val > tempValue ) {
-			newX10 = true;
+	pause = pause + 1;
+	if (pause == 100) {
+		t = dht.readTemperature();
+//		h = dht.readHumidity();
+//t = 20;
+		tempValue = (int)t; 
+		count = tempValue - 4;
+	/*	Serial.print(" old:");
+		Serial.print(old_val);
+		Serial.print(" tempValue:");
+		Serial.print(tempValue);
+		Serial.println("");
+*/
+		if (old_val != tempValue ) {
+			newX10temp = true;
 			unitCode = 5;
 			houseCode = HOUSE_A;
 			cmndCode = STATUS_REQUEST;
 		}
 		pause  = 0;
 	}
-	pause = pause + 1;
 	if (newX10) { 								// received a new command
 		X10_Debug(); 							// print out the received command
 		newX10 = false;
@@ -131,34 +129,50 @@ void loop() {
 				analogWrite(control_pin, brightness);
 			}
 			if (cmndCode == STATUS_REQUEST) {
-				Serial.println("status request for B1");
-				detachInterrupt(1); 					// must detach interrupt before sending
-				SendX10.write(HOUSE_A, UNIT_1, RPT_SEND);
-				SendX10.write(HOUSE_A, myX10B1, RPT_SEND);
-				attachInterrupt(1, Check_Rcvr, CHANGE);	// re-attach interrupt
+				if ( myX10B1 == ON ) {
+					stateCode = STATUS_ON;
+				}
+				if ( myX10B1 == OFF ) {
+					stateCode = STATUS_OFF;
+				}
+		
+				x10_write = 1;
 			}
 		}
-		if (unitCode == 5 && houseCode == HOUSE_M) {
-			//if (cmndCode == STATUS_REQUEST) {
-			if (cmndCode == PRE_SET_DIM) {
-				Serial.print("Temp requested for ");
-				Serial.print(houseCode, DEC);
-				Serial.println("");
-				detachInterrupt(1); 					// must detach interrupt before sending
-				SendX10.x10temp(houseCode, unitCode, count, 2);
-				attachInterrupt(1, Check_Rcvr, CHANGE);	// re-attach interrupt
-				pause = 0;
+		if (unitCode == 5 && houseCode == HOUSE_A) {
+			if (cmndCode == STATUS_REQUEST) {
+				sendtemp = 1;
 			}
 		}
-		Serial.print("temp sensor input ");
-		Serial.print(tempValue, DEC);
-		Serial.print("       ");
-		Serial.print("old value = ");
-		Serial.print(old_val, DEC);
-		Serial.print("       ");
-		Serial.print("ref value = ");
-		Serial.print(analogRead(ref_vcc), DEC);
-		Serial.println("");
-		old_val = tempValue;
 	}
+	if (newX10temp){
+                if (unitCode == 5 && houseCode == HOUSE_A) {
+                        if (cmndCode == STATUS_REQUEST) {
+                                sendtemp = 1;
+                        }
+                }
+	}
+	if ( x10_write == 1 ) {
+		Serial.print("status request for ");
+		Serial.print(houseCode);
+		Serial.println();
+        	detachInterrupt(1);                                     // must detach interrupt before sending
+	        SendX10.write(houseCode, unitCode, RPT_SEND);
+        	SendX10.write(houseCode, stateCode, RPT_SEND);
+	        attachInterrupt(1, Check_Rcvr, CHANGE); // re-attach interrupt
+		x10_write = 0;
+	}
+	if ( sendtemp == 1 ) {
+		Serial.print(" Temp is :");
+        	Serial.print(count + 4);
+	        Serial.println("");
+        	detachInterrupt(1);                                     // must detach interrupt before sending
+	        SendX10.x10temp(houseCode, unitCode, count, 8);
+        	attachInterrupt(1, Check_Rcvr, CHANGE); // re-attach interrupt
+	        attachInterrupt(0, Check_Rcvr, CHANGE); // re-attach interrupt
+        	pause = 0;
+	        old_val = tempValue;
+        	sendtemp = 0;
+	}
+
 }

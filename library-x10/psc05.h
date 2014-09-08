@@ -1,7 +1,9 @@
 // Defines and constants for PSC05 receiving
 
-#define OFFSET_DELAY 800 // uS from zero cross to center of bit (sugg 500-700 us)
-#define HALF_CYCLE_DELAY 10000 // Calculated 8334 uS between bit repeats in a half-cycle
+//#define OFFSET_DELAY 800 // uS from zero cross to center of bit (sugg 500-700 us)
+//#define HALF_CYCLE_DELAY 10000 // Calculated 8334 uS between bit repeats in a half-cycle
+#define OFFSET_DELAY 900 // uS from zero cross to center of bit (sugg 500-700 us)
+#define HALF_CYCLE_DELAY 8334 // Calculated 8334 uS between bit repeats in a half-cycle
 
 #ifndef ON  // use same defines from x10constants.h for rcvd cmnds
 #define ON   B00101 // these are examples
