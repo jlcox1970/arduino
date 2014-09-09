@@ -136,19 +136,22 @@ int x10::version(void)
 }
 
 void x10::x10temp (byte temp_houseCode, byte tmep_Unit, int count, int RPT_SEND){
-	/*
 	byte unit_Code;
-	if ((count > 0 ) && (count < 32)) {
+	if (count == 0)  {
+		unit_Code = UNIT_12;
+		count =  31  - count;
+	}
+	
+	if ((count > 0 ) && (count < 31)) {
 		unit_Code = UNIT_13;
 	}
 	if ((count > 32) && (count < 64)) {
 		unit_Code = UNIT_14;
-		count = count - 31;
+		count = count - 32;
 	}
-	*/
   	  detachInterrupt(0);                  // must detach interrupt before sending
           x10::write(temp_houseCode ,tmep_Unit ,RPT_SEND);  
-          x10::write(temp_houseCode ,UNIT_13 ,RPT_SEND);
+          x10::write(temp_houseCode ,unit_Code ,RPT_SEND);
           switch (count) {
             case 0:
               x10::write(HC_M,PRE_SET_DIM,RPT_SEND);
