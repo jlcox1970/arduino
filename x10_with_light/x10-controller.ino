@@ -75,7 +75,8 @@ void loop() {
 		X10_Debug(); 							// print out the received command
 		newX10 = false;
 		if (unitCode == 1 && houseCode == HOUSE_A) {
-			send_HC= HC_A;
+			send_HC  = HC_A;
+			unitCode = UNIT_1;
 			if (cmndCode == ON) {
 				detachInterrupt(1); 			// must detach interrupt before sending
 				SendX10.write(HOUSE_B, UNIT_5, RPT_SEND);
@@ -91,14 +92,12 @@ void loop() {
 				attachInterrupt(1, Check_Rcvr, CHANGE);// re-attach interrupt
 			}
 			if (cmndCode == STATUS_REQUEST) {
-				detachInterrupt(1); 			// must detach interrupt before sending
-				SendX10.write(HOUSE_A, UNIT_1, RPT_SEND);
-				SendX10.write(HOUSE_A, myX10D1, RPT_SEND);
-				attachInterrupt(1, Check_Rcvr, CHANGE);// re-attach interrupt
+				x10_write = 1;
 			}
 		}
 		if (unitCode == 1 && houseCode == HOUSE_B ) {
 			send_HC=HC_B;
+			unitCode = UNIT_1;
 			if (cmndCode == ON) {
 				analogWrite(control_pin, 255);
 				brightness = 255;
@@ -124,25 +123,15 @@ void loop() {
 				analogWrite(control_pin, brightness);
 			}
 			if (cmndCode == STATUS_REQUEST) {
-				/*
-				if ( myX10B1 == ON ) {
-					stateCode = STATUS_ON;
-				}
-				if ( myX10B1 == OFF ) {
-					stateCode = STATUS_OFF;
-				}*/
-				Serial.print("statecode:");
-				Serial.println(stateCode, BIN);
 				x10_write = 1;
 			}
 		}
 		if (unitCode == 5 && houseCode == HOUSE_A) {
+			send_HC=HC_A;
+			unitCode = UNIT_5;
 			if (cmndCode == STATUS_REQUEST) {
 				sendtemp = 1;
 				newX10temp = true;
-				unitCode = 5;
-				send_HC = HC_A;
-				cmndCode = STATUS_REQUEST;
 			}
 		}
 	}
@@ -172,8 +161,13 @@ void loop() {
                 }
 	}
 	if ( x10_write == 1 ) {
+		//delay (1);
 		Serial.print("status request for ");
-		Serial.print(houseCode);
+		Serial.print(send_HC, BIN);
+		Serial.print(" unit:");
+		Serial.print(unitCode, BIN);
+		Serial.print(" stateCode:");
+		Serial.print(stateCode, BIN);
 		Serial.println();
         detachInterrupt(1);                                     // must detach interrupt before sending
 	    SendX10.write(send_HC, unitCode, RPT_SEND);
