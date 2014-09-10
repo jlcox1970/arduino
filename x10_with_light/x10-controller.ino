@@ -13,7 +13,7 @@
 #include "DHT.h"
 #include <psc05.h>              // constants for PSC05 X10 Receiver
 
-#define RPT_SEND 	2       // how many times transmit repeats if noisy set higher
+#define RPT_SEND 	1       // how many times transmit repeats if noisy set higher
 #define dataPin        PD0      // YEL pin 4 of PSC05
 #define RCVE_PIN       PD1      // GRN pin 3 of PSC05
 #define ZCROSS_PIN     PD2      // BLK pin 1 of PSC05
@@ -72,6 +72,7 @@ void loop() {
 	}
 	delay(1);
 	if (newX10) { 								// received a new command
+		Serial.println(".");
 		X10_Debug(); 							// print out the received command
 		newX10 = false;
 		if (unitCode == 1 && houseCode == HOUSE_A) {
@@ -168,7 +169,7 @@ void loop() {
 		Serial.print(stateCode, BIN);
 		Serial.println();
         detachInterrupt(1);                                     // must detach interrupt before sending
-	    SendX10.write(send_HC, unitCode, RPT_SEND);
+//	    SendX10.write(send_HC, unitCode, RPT_SEND);
         SendX10.write(send_HC, stateCode, RPT_SEND);
 	    attachInterrupt(1, Check_Rcvr, CHANGE); 				// re-attach interrupt
 		x10_write = 0;
