@@ -22,4 +22,5 @@ void setup() {
 	digitalWrite(DC_TRANS_PIN, HIGH);
 	digitalWrite(DC_CLOCK_PIN, HIGH);
 	dht.begin();
+	stateCode=STATUS_OFF;
 }

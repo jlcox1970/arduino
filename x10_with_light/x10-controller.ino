@@ -58,9 +58,9 @@ bool sent = false;
 x10 SendX10 = x10(ZCROSS_PIN, dataPin);	// set up a x10 library instance:
 DHT dht(DHTPIN, DHTTYPE);
 
+#include "debug.h"
 #include "Parse_frame.h"
 #include "x10_check_rcvr.h"
-#include "debug.h"
 #include "setup.h"
 
 void loop() {
@@ -81,14 +81,12 @@ void loop() {
 				detachInterrupt(1); 			// must detach interrupt before sending
 				SendX10.write(HOUSE_B, UNIT_5, RPT_SEND);
 				SendX10.write(HOUSE_B, ON, RPT_SEND);
-				myX10D1 = ON;
 				attachInterrupt(1, Check_Rcvr, CHANGE);// re-attach interrupt
 			}
 			if (cmndCode == OFF) {
 				detachInterrupt(1); 			// must detach interrupt before sending
 				SendX10.write(HOUSE_B, UNIT_5, RPT_SEND);
 				SendX10.write(HOUSE_B, OFF, RPT_SEND);
-				myX10D1 = OFF;
 				attachInterrupt(1, Check_Rcvr, CHANGE);// re-attach interrupt
 			}
 			if (cmndCode == STATUS_REQUEST) {
@@ -123,16 +121,16 @@ void loop() {
 				analogWrite(control_pin, brightness);
 			}
 			if (cmndCode == STATUS_REQUEST) {
+				delay (250);
 				x10_write = 1;
 			}
 		}
-		if (unitCode == 5 && houseCode == HOUSE_A) {
+		if ((unitCode == 5 && houseCode == 77 && cmndCode == PRE_SET_DIM ) || (unitCode == 5 && houseCode == HOUSE_A && cmndCode == STATUS_REQUEST )) {
 			send_HC=HC_A;
 			unitCode = UNIT_5;
-			if (cmndCode == STATUS_REQUEST) {
-				sendtemp = 1;
-				newX10temp = true;
-			}
+			sendtemp = 1;
+			newX10temp = true;
+			delay(10);
 		}
 	}
 	if ( newX10 == false ) {
@@ -160,7 +158,7 @@ void loop() {
                         }
                 }
 	}
-	if ( x10_write == 1 ) {
+	if ( x10_write == 1 && newX10 == false) {
 		//delay (1);
 		Serial.print("status request for ");
 		Serial.print(send_HC, BIN);
@@ -175,7 +173,7 @@ void loop() {
 	    attachInterrupt(1, Check_Rcvr, CHANGE); 				// re-attach interrupt
 		x10_write = 0;
 	}
-	if ( sendtemp == 1 ) {
+	if ( sendtemp == 1  && newX10 == false ) {
         detachInterrupt(1);                                     // must detach interrupt before sending
 	    SendX10.x10temp(send_HC, unitCode, count,1);
         attachInterrupt(1, Check_Rcvr, CHANGE); 				// re-attach interrupt
