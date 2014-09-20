@@ -1,9 +1,9 @@
 void Check_Rcvr() { 					// ISR - called when zero crossing (on CHANGE)
-	if (DC_CLOCK_PIN == 0)
+	/*if (DC_CLOCK_PIN == 0)
 		digitalWrite(DC_CLOCK_PIN, HIGH);
 	else
 		digitalWrite(DC_CLOCK_PIN, LOW);
-
+*/
 	if (X10BitCnt == 0) { 				// looking for new frame
 		delayMicroseconds(OFFSET_DELAY); // wait for bit
 		if (digitalRead(RCVE_PIN))

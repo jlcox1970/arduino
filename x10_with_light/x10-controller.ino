@@ -13,21 +13,26 @@
 #include "DHT.h"
 #include <psc05.h>              // constants for PSC05 X10 Receiver
 
-#define RPT_SEND 	1       // how many times transmit repeats if noisy set higher
+#define RPT_SEND 		1       // how many times transmit repeats if noisy set higher
 #define dataPin        PD0      // YEL pin 4 of PSC05
 #define RCVE_PIN       PD1      // GRN pin 3 of PSC05
 #define ZCROSS_PIN     PD2      // BLK pin 1 of PSC05
-#define DHTPIN 	       PD3	// what pin we're connected to for DHT22
-#define LED_PIN        8        // Green LED
-#define LED2_PIN       10	// Blue LED
-#define LED3_PIN       13	// Red LED
-#define control_pin    9  
-#define temp_pin       A3
-#define ref_vcc        A4
-#define DC_TRANS_PIN	8	// DC Bus data out
-#define DC_RCVE_PIN 	6	// DC Bus data in
-#define DC_CLOCK_PIN	7	// DC_Bus Clock
-#define DHTTYPE 	DHT22  	// DHT 22  (AM2302)
+#define LED_PIN        9        // Green LED
+#define LED2_PIN       10		// Blue LED
+#define LED3_PIN       13		// Red LED
+
+#define control_pin    13  
+/*
+#define DC_TRANS_PIN	8		// DC Bus data out
+#define DC_RCVE_PIN 	6		// DC Bus data in
+#define DC_CLOCK_PIN	7		// DC_Bus Clock
+*/
+#define DHTPIN 	       	PD3		// what pin we're connected to for DHT22
+#define DHTTYPE 		DHT22  	// DHT 22  (AM2302)
+#define RELAY_1 		PD7
+#define RELAY_2			PD6
+#define RELAY_3			PD5
+#define RELAY_4			PD4
 
 volatile unsigned long mask; 		// MSB first - bit 12 - bit 0
 volatile unsigned int X10BitCnt = 0; 	// counts bit sequence in frame
@@ -36,7 +41,7 @@ volatile unsigned long rcveBuff; 	// holds the 13 bits received in a frame
 volatile boolean X10rcvd = false; 	// true if a new frame has been received
 boolean newX10 	= false; 		// both the unit frame and the command frame received
 boolean newX10temp 	= false; 		// both the unit frame and the command frame received
-byte houseCode, unitCode, cmndCode, stateCode, send_HC; 	// current house, unit, and command code
+byte houseCode, unitCode, cmndCode, stateCode, send_HC, send_UC; 	// current house, unit, and command code
 byte startCode; 			// only needed for testing - sb B1110 (14)
 bool myX10D1, myX10B1; 	// my state
 volatile int tempValue 	= 0;
@@ -77,7 +82,7 @@ void loop() {
 		newX10 = false;
 		if (unitCode == 1 && houseCode == HOUSE_A) {
 			send_HC  = HC_A;
-			unitCode = UNIT_1;
+			send_UC = UNIT_1;
 			if (cmndCode == ON) {
 				detachInterrupt(1); 			// must detach interrupt before sending
 				SendX10.write(HOUSE_B, UNIT_5, RPT_SEND);
@@ -92,11 +97,72 @@ void loop() {
 			}
 			if (cmndCode == STATUS_REQUEST) {
 				x10_write = 1;
+			}			
+		}
+		// Relay 1
+		if (unitCode == 2 && houseCode == HOUSE_A) {
+			send_HC  = HC_A;
+			send_UC = UNIT_2;
+			if (cmndCode == ON) {
+				digitalWrite(RELAY_1, 1);
 			}
+			if (cmndCode == OFF) {
+				digitalWrite(RELAY_1, 0);
+			}
+			if (cmndCode == STATUS_REQUEST) {
+				x10_write = 1;
+			}			
+		}	
+
+		// Relay 2
+		if (unitCode == 3 && houseCode == HOUSE_A) {
+			send_HC  = HC_A;
+			send_UC = UNIT_3;
+			if (cmndCode == ON) {
+				digitalWrite(RELAY_2, 1);
+				Serial.println(" Turn on A3");
+			}
+			if (cmndCode == OFF) {
+				digitalWrite(RELAY_2, 0);
+			}
+			if (cmndCode == STATUS_REQUEST) {
+				x10_write = 1;
+			}	
+			unitCode = 99;
+		}
+		
+		// Relay 4
+		if (unitCode == 5 && houseCode == HOUSE_A) {
+			send_HC  = HC_A;
+			send_UC = UNIT_5;
+			if (cmndCode == ON) {
+				digitalWrite(RELAY_4, 1);
+			}
+			if (cmndCode == OFF) {
+				digitalWrite(RELAY_4, 0);
+			}
+			if (cmndCode == STATUS_REQUEST) {
+				x10_write = 1;
+			}			
+		}
+		// Relay 3
+		if (unitCode == 4 && houseCode == HOUSE_A) {
+			send_HC  = HC_A;
+			send_UC = UNIT_4;
+			if (cmndCode == ON) {
+				digitalWrite(RELAY_3, 1);
+				Serial.println(" Turn on A4");
+			}
+			if (cmndCode == OFF) {
+				digitalWrite(RELAY_3, 0);
+			}
+			if (cmndCode == STATUS_REQUEST) {
+				x10_write = 1;
+			}			
 		}
 		if (unitCode == 1 && houseCode == HOUSE_B ) {
 			send_HC=HC_B;
-			unitCode = UNIT_1;
+			send_UC = UNIT_1;
 			if (cmndCode == ON) {
 				analogWrite(control_pin, 255);
 				brightness = 255;
@@ -127,8 +193,8 @@ void loop() {
 			}
 		}
 		if ((unitCode == 5 && houseCode == 77 && cmndCode == PRE_SET_DIM ) || (unitCode == 5 && houseCode == HOUSE_A && cmndCode == STATUS_REQUEST )) {
-			send_HC=HC_A;
-			unitCode = UNIT_5;
+			send_HC = HC_A;
+			send_UC = UNIT_5;
 			sendtemp = 1;
 			newX10temp = true;
 			delay(10);

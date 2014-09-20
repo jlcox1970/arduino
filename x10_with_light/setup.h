@@ -12,15 +12,24 @@ void setup() {
 	pinMode(LED_PIN, OUTPUT); 			// onboard LED
 	pinMode(control_pin, OUTPUT);
 	pinMode(RCVE_PIN, INPUT); 			// receive X10 commands - low = 1
-        pinMode(dataPin, OUTPUT);
-        pinMode(ZCROSS_PIN, INPUT); 		// zero crossing - 60 Hz square wave
+    pinMode(dataPin, OUTPUT);
+    pinMode(ZCROSS_PIN, INPUT); 		// zero crossing - 60 Hz square wave
 	digitalWrite(RCVE_PIN, HIGH); 		// set 20K pullup (low active signal)
 	digitalWrite(ZCROSS_PIN, HIGH); 	// set 20K pullup (low active signal)
-	pinMode(DC_RCVE_PIN, INPUT);
+/*
+ * 
+ 	pinMode(DC_RCVE_PIN, INPUT);
 	pinMode(DC_TRANS_PIN, OUTPUT);
 	pinMode(DC_CLOCK_PIN, OUTPUT);
 	digitalWrite(DC_TRANS_PIN, HIGH);
 	digitalWrite(DC_CLOCK_PIN, HIGH);
+*/
 	dht.begin();
 	stateCode=STATUS_OFF;
+	// relay outputs
+	pinMode(RELAY_1, OUTPUT);
+	pinMode(RELAY_2, OUTPUT);
+	pinMode(RELAY_3, OUTPUT);
+	pinMode(RELAY_4, OUTPUT);
+			
 }
