@@ -41,3 +41,37 @@ void X10_Debug() {
 		Serial.print(" (STATUS_REQUEST)");
 	Serial.println("");
 }
+
+void X10_write_debug(){
+	Serial.print("status request for ");
+	Serial.print(send_HC, BIN);
+	Serial.print(" unit:");
+	Serial.print(send_UC, BIN);
+	Serial.print(" stateCode:");
+	Serial.print(stateCode, BIN);
+	Serial.println();
+	
+}
+void X10_write_temp_debug(){
+	Serial.print("Pause =");
+	Serial.print(count_pause);
+	Serial.println("----");
+	Serial.print(" tempValue:");
+	Serial.println(tempValue);
+	Serial.print("count pause: ");
+	Serial.print(count_pause);
+	Serial.print(" check time: " );
+	Serial.println(check_time);
+}
+void X10_frame_debug(){
+	Serial.print("Parse Frame :");
+	Serial.println(rcveBuff, BIN);
+}
+void minute_debug(){
+	Serial.print("tick ");
+	Serial.println(minutes(), DEC);
+	Serial.print("count pause: ");
+	Serial.print(count_pause);
+	Serial.print(" check time: " );
+	Serial.println(check_time);
+}

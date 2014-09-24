@@ -1,7 +1,5 @@
 
 void Parse_Frame() { 					// parses the receive buffer to get House, Unit, and Cmnd
-	Serial.print("Parse Frame :");
-	Serial.println(rcveBuff, BIN);
 	if (rcveBuff & 0x1) { 				// last bit set so it's a command
 		cmndCode = rcveBuff & 0x1F; 	// mask 5 bits 0 - 4 to get the command
 		newX10 = true; 					// now have complete pair of frames
@@ -26,5 +24,8 @@ void Parse_Frame() { 					// parses the receive buffer to get House, Unit, and C
 	rcveBuff = rcveBuff >> 4; 			// shift the start code down to LSB
 	startCode = rcveBuff & 0x0F; 		// mask the last 4 bits to get the start code
 	X10rcvd = false; 					// reset status
-	X10_Debug();
+	if ( myX10P1 == 1){
+		X10_frame_debug();
+		X10_Debug();
+	}
 }

@@ -39,11 +39,12 @@ volatile unsigned int X10BitCnt = 0; 	// counts bit sequence in frame
 volatile unsigned int ZCrossCnt = 0; 	// counts Z crossings in frame
 volatile unsigned long rcveBuff; 	// holds the 13 bits received in a frame
 volatile boolean X10rcvd = false; 	// true if a new frame has been received
-boolean newX10 	= false; 		// both the unit frame and the command frame received
-boolean newX10temp 	= false; 		// both the unit frame and the command frame received
+bool newX10 	= false; 		// both the unit frame and the command frame received
+bool newX10temp 	= false; 		// both the unit frame and the command frame received
+bool autoreport = false;		// setting to change if its an auto report
 byte houseCode, unitCode, cmndCode, stateCode, send_HC, send_UC; 	// current house, unit, and command code
 byte startCode; 			// only needed for testing - sb B1110 (14)
-bool myX10D1, myX10B1; 	// my state
+bool myX10P1, myX10D1, myX10B1, myX10A1, myX10A2, myX10A3,myX10A4,myX10A6; 	// my state
 volatile int tempValue 	= 0;
 int count 	= 0;
 byte out_put;
@@ -54,28 +55,44 @@ int fadeAmount 	= 255 / 8; 		// how many points to fade the LED by
 int sendtemp   	= 0;
 int x10_write  	= 0;
 float t, h;
-int check_time  = 4;			//delay for tempurature check
+int check_time  = 1;			//delay for tempurature check
 int pause_reset = 5;
 int small_timer = 20000;
 int small_count = 0 ;
 bool sent = false;
+int lastMinute;
+
+//vars for timer
+long currentSec;
+long lastSec;
+long setTimeSec = 60;
 
 x10 SendX10 = x10(ZCROSS_PIN, dataPin);	// set up a x10 library instance:
 DHT dht(DHTPIN, DHTTYPE);
 
+#include "timers.h"
 #include "debug.h"
 #include "Parse_frame.h"
 #include "x10_check_rcvr.h"
 #include "setup.h"
+#include "x10-send.h"
+#include "x10-set-dio.h"
+#include "x10-set-aio.h"
 
 void loop() {
-	small_count = small_count +1 ;
-	if ( small_count >= small_timer) {
-		count_pause = count_pause + 1;
-		small_count = 0 ;
-		Serial.print(" ");
+	//calculate current uptime in seconds
+	currentSec = seconds();
+	lastSec = check_timer ( setTimeSec, lastSec, HC_A, UNIT_2, myX10A2, RELAY_1 );
+
+	if ( minutes() - lastMinute >= check_time){
+		if (myX10P1 == 1){
+			minute_debug();
+		}
+		count_pause = check_time;
+		lastMinute = minutes();
+		sent = false;
 	}
-	delay(1);
+	
 	if (newX10) { 								// received a new command
 		Serial.println(".");
 		X10_Debug(); 							// print out the received command
@@ -83,114 +100,53 @@ void loop() {
 		if (unitCode == 1 && houseCode == HOUSE_A) {
 			send_HC  = HC_A;
 			send_UC = UNIT_1;
-			if (cmndCode == ON) {
-				detachInterrupt(1); 			// must detach interrupt before sending
-				SendX10.write(HOUSE_B, UNIT_5, RPT_SEND);
-				SendX10.write(HOUSE_B, ON, RPT_SEND);
-				attachInterrupt(1, Check_Rcvr, CHANGE);// re-attach interrupt
-			}
-			if (cmndCode == OFF) {
-				detachInterrupt(1); 			// must detach interrupt before sending
-				SendX10.write(HOUSE_B, UNIT_5, RPT_SEND);
-				SendX10.write(HOUSE_B, OFF, RPT_SEND);
-				attachInterrupt(1, Check_Rcvr, CHANGE);// re-attach interrupt
-			}
-			if (cmndCode == STATUS_REQUEST) {
-				x10_write = 1;
-			}			
+			myX10A1 = set_DIO(cmndCode, LED2_PIN, myX10A1);
 		}
 		// Relay 1
 		if (unitCode == 2 && houseCode == HOUSE_A) {
 			send_HC  = HC_A;
 			send_UC = UNIT_2;
-			if (cmndCode == ON) {
-				digitalWrite(RELAY_1, 1);
-			}
-			if (cmndCode == OFF) {
-				digitalWrite(RELAY_1, 0);
-			}
-			if (cmndCode == STATUS_REQUEST) {
-				x10_write = 1;
-			}			
+			myX10A2 = set_DIO(cmndCode, RELAY_1, myX10A2);
 		}	
 
 		// Relay 2
 		if (unitCode == 3 && houseCode == HOUSE_A) {
 			send_HC  = HC_A;
 			send_UC = UNIT_3;
-			if (cmndCode == ON) {
-				digitalWrite(RELAY_2, 1);
-				Serial.println(" Turn on A3");
-			}
-			if (cmndCode == OFF) {
-				digitalWrite(RELAY_2, 0);
-			}
-			if (cmndCode == STATUS_REQUEST) {
-				x10_write = 1;
-			}	
-			unitCode = 99;
+			myX10A3 = set_DIO(cmndCode, RELAY_2, myX10A3);
 		}
 		
-		// Relay 4
-		if (unitCode == 5 && houseCode == HOUSE_A) {
-			send_HC  = HC_A;
-			send_UC = UNIT_5;
-			if (cmndCode == ON) {
-				digitalWrite(RELAY_4, 1);
-			}
-			if (cmndCode == OFF) {
-				digitalWrite(RELAY_4, 0);
-			}
-			if (cmndCode == STATUS_REQUEST) {
-				x10_write = 1;
-			}			
-		}
 		// Relay 3
 		if (unitCode == 4 && houseCode == HOUSE_A) {
 			send_HC  = HC_A;
 			send_UC = UNIT_4;
+			myX10A4 = set_DIO(cmndCode, RELAY_3, myX10A4);
+		}
+		// Relay 4
+		if (unitCode == 6 && houseCode == HOUSE_A) {
+			send_HC  = HC_A;
+			send_UC = UNIT_6;
+			myX10A6 = set_DIO(cmndCode, RELAY_4, myX10A6);
+		}
+		// P1 - turn on debug
+		if (unitCode == 1 && houseCode == HOUSE_P) {
 			if (cmndCode == ON) {
-				digitalWrite(RELAY_3, 1);
-				Serial.println(" Turn on A4");
+				myX10P1 = 1;
 			}
 			if (cmndCode == OFF) {
-				digitalWrite(RELAY_3, 0);
+				myX10P1 = 0;
 			}
 			if (cmndCode == STATUS_REQUEST) {
 				x10_write = 1;
-			}			
+			}		
+			Serial.print("P1 is (Debug) ");
+			Serial.print(myX10P1);
+			Serial.println("");
 		}
 		if (unitCode == 1 && houseCode == HOUSE_B ) {
 			send_HC=HC_B;
 			send_UC = UNIT_1;
-			if (cmndCode == ON) {
-				analogWrite(control_pin, 255);
-				brightness = 255;
-				myX10B1 = ON;
-				stateCode = STATUS_ON;
-			}
-			if (cmndCode == OFF) {
-				analogWrite(control_pin, 0);
-				brightness = 0;
-				myX10B1 = OFF;
-				stateCode = STATUS_OFF;
-			}
-			if (cmndCode == DIM) {
-				brightness = brightness - fadeAmount;
-				if (brightness <= 0)
-					brightness = fadeAmount;
-				analogWrite(control_pin, brightness);
-			}
-			if (cmndCode == BRIGHT) {
-				brightness = brightness + fadeAmount;
-				if (brightness >= 255)
-					brightness = 255;
-				analogWrite(control_pin, brightness);
-			}
-			if (cmndCode == STATUS_REQUEST) {
-				delay (250);
-				x10_write = 1;
-			}
+			myX10B1 = set_AIO(cmndCode,  control_pin,  myX10B1);
 		}
 		if ((unitCode == 5 && houseCode == 77 && cmndCode == PRE_SET_DIM ) || (unitCode == 5 && houseCode == HOUSE_A && cmndCode == STATUS_REQUEST )) {
 			send_HC = HC_A;
@@ -202,13 +158,11 @@ void loop() {
 	}
 	if ( newX10 == false ) {
 		if ( count_pause == check_time && sent == false) { 
-			Serial.print("Pause =");
-			Serial.print(count_pause);
-			Serial.println("----");
 			tempValue = (int)dht.readTemperature(); 
 			count = tempValue - 4;
-			Serial.print(" tempValue:");
-			Serial.println(tempValue);
+			if (myX10P1 == 1){
+				X10_write_temp_debug();
+			}
 			newX10temp = true;
 			unitCode = 5;
 			houseCode = HOUSE_A;
@@ -225,26 +179,15 @@ void loop() {
                         }
                 }
 	}
-	if ( x10_write == 1 && newX10 == false) {
-		//delay (1);
-		Serial.print("status request for ");
-		Serial.print(send_HC, BIN);
-		Serial.print(" unit:");
-		Serial.print(unitCode, BIN);
-		Serial.print(" stateCode:");
-		Serial.print(stateCode, BIN);
-		Serial.println();
-        detachInterrupt(1);                                     // must detach interrupt before sending
-//	    SendX10.write(send_HC, unitCode, RPT_SEND);
-        SendX10.write(send_HC, stateCode, RPT_SEND);
-	    attachInterrupt(1, Check_Rcvr, CHANGE); 				// re-attach interrupt
-		x10_write = 0;
+	if ( x10_write == 1 && newX10 == false ) {
+		if (myX10P1 == 1){
+			X10_write_debug();
+		}
+		x10write(autoreport, send_HC, send_UC, RPT_SEND);
 	}
+	
 	if ( sendtemp == 1  && newX10 == false ) {
-        detachInterrupt(1);                                     // must detach interrupt before sending
-	    SendX10.x10temp(send_HC, unitCode, count,1);
-        attachInterrupt(1, Check_Rcvr, CHANGE); 				// re-attach interrupt
-	    attachInterrupt(0, Check_Rcvr, CHANGE); 				// re-attach interrupt
+		x10temp(send_HC,unitCode,count);
 	    old_val = tempValue;
         sendtemp = 0;
 	}
@@ -254,3 +197,5 @@ void loop() {
        		sent = false;
    	}
 }
+
+	
