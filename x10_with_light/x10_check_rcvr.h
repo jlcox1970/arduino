@@ -8,7 +8,9 @@ void Check_Rcvr() { 					// ISR - called when zero crossing (on CHANGE)
 		delayMicroseconds(OFFSET_DELAY); // wait for bit
 		if (digitalRead(RCVE_PIN))
 			return; 					// still high - no start bit - get out
-		digitalWrite(LED_PIN, HIGH); 	// indicate you got something
+		if ( myX10P1 == 1){
+			digitalWrite(LED2_PIN, HIGH); 	// indicate you got something
+		}
 		rcveBuff = 0;
 		mask = 0x1000; 					// bitmask with bit 12 set
 		rcveBuff = rcveBuff | mask; 	// sets bit 12 (highest)
@@ -35,7 +37,9 @@ void Check_Rcvr() { 					// ISR - called when zero crossing (on CHANGE)
 			for (byte i = 0; i < 5; i++)
 				delayMicroseconds(HALF_CYCLE_DELAY); // need this
 			X10rcvd = true; 			// a new frame has been received
-			digitalWrite(LED_PIN, LOW);
+			if ( myX10P1 == 1){
+						digitalWrite(LED2_PIN, LOW);
+			}
 			X10BitCnt = 0;
 			Parse_Frame(); 				// parse out the house & unit code and command
 		}

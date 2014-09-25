@@ -25,7 +25,14 @@ void setup() {
 	digitalWrite(DC_CLOCK_PIN, HIGH);
 */
 	dht.begin();
-	stateCode=STATUS_OFF;
+	for ( int i = 0 ; i < 16 ; i ++){
+		for ( int j = 0 ; j < 16 ; j++ ){
+			stateCode [i][j] = STATUS_OFF;
+		}
+	}
+	typeCode[15][0] = 99;  // setup dull device control for debug on house P unit 1
+	typeCode[0][0]= 98;    // on board led with dimmer
+	
 	// relay outputs
 	pinMode(RELAY_1, OUTPUT);
 	pinMode(RELAY_2, OUTPUT);

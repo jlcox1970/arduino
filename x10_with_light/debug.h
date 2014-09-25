@@ -48,8 +48,12 @@ void X10_write_debug(){
 	Serial.print(" unit:");
 	Serial.print(send_UC, BIN);
 	Serial.print(" stateCode:");
-	Serial.print(stateCode, BIN);
+	Serial.print(stateCode[HC][UC], BIN);
 	Serial.println();
+	Serial.print ("send HC :");
+	Serial.print (HC);
+	Serial.print (" send UC :");
+	Serial.println(UC);
 	
 }
 void X10_write_temp_debug(){
@@ -74,4 +78,15 @@ void minute_debug(){
 	Serial.print(count_pause);
 	Serial.print(" check time: " );
 	Serial.println(check_time);
+}
+void X10_debug_notify(){
+	if (unitCode == 1 && houseCode == HOUSE_P) {
+		Serial.print("P1 is (Debug) ");
+		Serial.print(myX10[15][0]);
+		Serial.println("");
+	}
+}
+void X10_debug_aio(){
+	Serial.print("DIM value :");
+	Serial.println(state, DEC);
 }

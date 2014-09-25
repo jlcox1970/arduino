@@ -42,16 +42,17 @@ volatile boolean X10rcvd = false; 	// true if a new frame has been received
 bool newX10 	= false; 		// both the unit frame and the command frame received
 bool newX10temp 	= false; 		// both the unit frame and the command frame received
 bool autoreport = false;		// setting to change if its an auto report
-byte houseCode, unitCode, cmndCode, stateCode, send_HC, send_UC; 	// current house, unit, and command code
+byte houseCode, unitCode, cmndCode, stateCode[16][16], send_HC, send_UC; 	// current house, unit, and command code
 byte startCode; 			// only needed for testing - sb B1110 (14)
-bool myX10P1, myX10D1, myX10B1, myX10A1, myX10A2, myX10A3,myX10A4,myX10A6; 	// my state
+bool myX10P1;
+int myX10DIM[16][16], typeCode[16][16], myX10[16] [16]; 	// my state
 volatile int tempValue 	= 0;
 int count 	= 0;
 byte out_put;
 int old_val 	= 0;
 int count_pause = 0;
 int brightness 	= 0; 			// how bright the LED is
-int fadeAmount 	= 255 / 8; 		// how many points to fade the LED by
+int fadeAmount 	= 32; 		// how many points to fade the LED by
 int sendtemp   	= 0;
 int x10_write  	= 0;
 float t, h;
@@ -61,11 +62,36 @@ int small_timer = 20000;
 int small_count = 0 ;
 bool sent = false;
 int lastMinute;
+int HC, UC;
+int null_out = 999;
+int state;
 
 //vars for timer
 long currentSec;
 long lastSec;
-long setTimeSec = 60;
+long setTimeSec = 10;
+
+byte Control[16][16] = {
+		//B0000,		//0
+		LED_PIN,	//1
+		RELAY_1,	//2
+		RELAY_2,	//3
+		RELAY_3,	//4
+		LED3_PIN,	//5
+		RELAY_4,	//6
+		B0000,		//7
+		B0000,	//8
+		B0000,	//9
+		B0000,	//10
+		B0000,	//11
+		B0000,	//12
+		B0000,	//13
+		B0000,	//14
+		B0000,	//15
+		B0000,	//16	
+		LED2_PIN,	//1
+		
+};
 
 x10 SendX10 = x10(ZCROSS_PIN, dataPin);	// set up a x10 library instance:
 DHT dht(DHTPIN, DHTTYPE);
@@ -78,11 +104,14 @@ DHT dht(DHTPIN, DHTTYPE);
 #include "x10-send.h"
 #include "x10-set-dio.h"
 #include "x10-set-aio.h"
+#include "x10-set-null.h"
+
 
 void loop() {
+	myX10P1 = myX10[15][0];
 	//calculate current uptime in seconds
 	currentSec = seconds();
-	lastSec = check_timer ( setTimeSec, lastSec, HC_A, UNIT_2, myX10A2, RELAY_1 );
+	lastSec = check_timer ( setTimeSec, lastSec, 0, 2 );
 
 	if ( minutes() - lastMinute >= check_time){
 		if (myX10P1 == 1){
@@ -94,67 +123,30 @@ void loop() {
 	}
 	
 	if (newX10) { 								// received a new command
-		Serial.println(".");
 		X10_Debug(); 							// print out the received command
 		newX10 = false;
-		if (unitCode == 1 && houseCode == HOUSE_A) {
-			send_HC  = HC_A;
-			send_UC = UNIT_1;
-			myX10A1 = set_DIO(cmndCode, LED2_PIN, myX10A1);
-		}
-		// Relay 1
-		if (unitCode == 2 && houseCode == HOUSE_A) {
-			send_HC  = HC_A;
-			send_UC = UNIT_2;
-			myX10A2 = set_DIO(cmndCode, RELAY_1, myX10A2);
-		}	
-
-		// Relay 2
-		if (unitCode == 3 && houseCode == HOUSE_A) {
-			send_HC  = HC_A;
-			send_UC = UNIT_3;
-			myX10A3 = set_DIO(cmndCode, RELAY_2, myX10A3);
-		}
-		
-		// Relay 3
-		if (unitCode == 4 && houseCode == HOUSE_A) {
-			send_HC  = HC_A;
-			send_UC = UNIT_4;
-			myX10A4 = set_DIO(cmndCode, RELAY_3, myX10A4);
-		}
-		// Relay 4
-		if (unitCode == 6 && houseCode == HOUSE_A) {
-			send_HC  = HC_A;
-			send_UC = UNIT_6;
-			myX10A6 = set_DIO(cmndCode, RELAY_4, myX10A6);
-		}
-		// P1 - turn on debug
-		if (unitCode == 1 && houseCode == HOUSE_P) {
-			if (cmndCode == ON) {
-				myX10P1 = 1;
+		HC = houseCode - 65;
+		UC = unitCode - 1;
+		send_HC = House[HC];
+		send_UC = Unit[UC];
+		if (typeCode[HC][UC] == 99){
+			myX10[HC][UC] = set_NULL(cmndCode, Control[HC][UC], myX10[HC][UC]);
+		} else if  (typeCode[HC][UC] == 98){
+			myX10[HC][UC] = set_AIO(cmndCode, Control[HC][UC], myX10[HC][UC]);
+			if ( myX10P1 == 1){
+				state = myX10[HC][UC];
+				X10_debug_aio();
 			}
-			if (cmndCode == OFF) {
-				myX10P1 = 0;
-			}
-			if (cmndCode == STATUS_REQUEST) {
-				x10_write = 1;
-			}		
-			Serial.print("P1 is (Debug) ");
-			Serial.print(myX10P1);
-			Serial.println("");
-		}
-		if (unitCode == 1 && houseCode == HOUSE_B ) {
-			send_HC=HC_B;
-			send_UC = UNIT_1;
-			myX10B1 = set_AIO(cmndCode,  control_pin,  myX10B1);
+		} else {
+			myX10[HC][UC] = set_DIO(cmndCode, Control[HC][UC], myX10[HC][UC]);
 		}
 		if ((unitCode == 5 && houseCode == 77 && cmndCode == PRE_SET_DIM ) || (unitCode == 5 && houseCode == HOUSE_A && cmndCode == STATUS_REQUEST )) {
 			send_HC = HC_A;
 			send_UC = UNIT_5;
 			sendtemp = 1;
 			newX10temp = true;
-			delay(10);
 		}
+		X10_debug_notify();
 	}
 	if ( newX10 == false ) {
 		if ( count_pause == check_time && sent == false) { 
@@ -183,7 +175,9 @@ void loop() {
 		if (myX10P1 == 1){
 			X10_write_debug();
 		}
-		x10write(autoreport, send_HC, send_UC, RPT_SEND);
+		x10write(autoreport, HC, UC , RPT_SEND);
+		if (stateCode[HC][UC] == OFF)
+			stateCode[HC][UC] = STATUS_OFF;
 	}
 	
 	if ( sendtemp == 1  && newX10 == false ) {
@@ -192,7 +186,6 @@ void loop() {
         sendtemp = 0;
 	}
    	if ( count_pause >= pause_reset ){
-   	   		Serial.println("reset counter loop");
    	   		count_pause = 0;
        		sent = false;
    	}
