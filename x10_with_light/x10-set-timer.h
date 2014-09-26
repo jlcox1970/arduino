@@ -1,6 +1,6 @@
-int set_AIO(byte cmndCode, int AIO, int state){
+int set_timer(byte cmndCode, int DIO, int state, int HC, int UC){
 	if (cmndCode == ON) {
-		state = 254;
+		state = maxTime;
 		stateCode[HC][UC] = STATUS_ON;
 	}
 	if (cmndCode == OFF) {
@@ -8,18 +8,21 @@ int set_AIO(byte cmndCode, int AIO, int state){
 		state = 0;
 	}
 	if (cmndCode == DIM) {
-		state = state  - fadeAmount;
-		if  ( state <= 0){
+		
+		if  ( state <= timeVal + 1){
 			state = 0;
 			stateCode[HC][UC] = OFF;
 			autoreport = true;
 			x10_write = 1;
 		} else {
-			stateCode[HC][UC] = STATUS_ON;
+			state = state  - timeVal;
+			stateCode[HC][UC] = DIM;
+			autoreport = true;
+			x10_write = 1;
 		}
 	}
 	if (cmndCode == BRIGHT) {
-		state = state + fadeAmount;
+		state = state + timeVal;
 		if ( state >= 254 )
 			state = 254;
 		stateCode[HC][UC] = STATUS_ON;
@@ -28,7 +31,10 @@ int set_AIO(byte cmndCode, int AIO, int state){
 		autoreport = false;
 		x10_write = 1;
 	}
-
-	analogWrite(AIO, state);
+	if (stateCode[HC][UC] == STATUS_ON || stateCode[HC][UC] == DIM ){
+		digitalWrite(DIO,1);
+	} else {
+		digitalWrite(DIO,0);
+	}
 	return state;
 }

@@ -8,7 +8,7 @@ void Check_Rcvr() { 					// ISR - called when zero crossing (on CHANGE)
 		delayMicroseconds(OFFSET_DELAY); // wait for bit
 		if (digitalRead(RCVE_PIN))
 			return; 					// still high - no start bit - get out
-		if ( myX10P1 == 1){
+		if ( debug == 1){
 			digitalWrite(LED2_PIN, HIGH); 	// indicate you got something
 		}
 		rcveBuff = 0;
@@ -37,7 +37,7 @@ void Check_Rcvr() { 					// ISR - called when zero crossing (on CHANGE)
 			for (byte i = 0; i < 5; i++)
 				delayMicroseconds(HALF_CYCLE_DELAY); // need this
 			X10rcvd = true; 			// a new frame has been received
-			if ( myX10P1 == 1){
+			if ( debug == 1){
 						digitalWrite(LED2_PIN, LOW);
 			}
 			X10BitCnt = 0;

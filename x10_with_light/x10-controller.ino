@@ -1,4 +1,5 @@
 /* Arduino Interface to the PSC05 X10 Receiver.                       BroHogan 3/24/09
+ * modified by Jason Cox
  * SETUP: X10 PSC05/TW523 RJ11 to Arduino (timing for 60Hz)
  * - RJ11 pin 1 (BLK) -> Pin 2 (Interrupt 0) = Zero Crossing
  * - RJ11 pin 2 (RED) -> GND
@@ -39,63 +40,51 @@ volatile unsigned int X10BitCnt = 0; 	// counts bit sequence in frame
 volatile unsigned int ZCrossCnt = 0; 	// counts Z crossings in frame
 volatile unsigned long rcveBuff; 	// holds the 13 bits received in a frame
 volatile boolean X10rcvd = false; 	// true if a new frame has been received
-bool newX10 	= false; 		// both the unit frame and the command frame received
+bool newX10 		= false; 		// both the unit frame and the command frame received
 bool newX10temp 	= false; 		// both the unit frame and the command frame received
-bool autoreport = false;		// setting to change if its an auto report
-byte houseCode, unitCode, cmndCode, stateCode[16][16], send_HC, send_UC; 	// current house, unit, and command code
-byte startCode; 			// only needed for testing - sb B1110 (14)
-bool myX10P1;
-int myX10DIM[16][16], typeCode[16][16], myX10[16] [16]; 	// my state
+bool autoreport 	= false;		// setting to change if its an auto report
+byte houseCode, unitCode, cmndCode, stateCode[16][16], send_HC, send_UC, firstHouse; 	// current house, unit, and command code
+byte startCode; 					// only needed for testing - sb B1110 (14)
+bool debug, debug2;
+int myX10DIM[16][16] ;
+byte typeCode[16][16] ;
+int myX10[16] [16] ;
+//int myX10Timers[16][16]; 	// my state
+long lastrun[16][16];
 volatile int tempValue 	= 0;
 int count 	= 0;
 byte out_put;
 int old_val 	= 0;
 int count_pause = 0;
-int brightness 	= 0; 			// how bright the LED is
-int fadeAmount 	= 32; 		// how many points to fade the LED by
+//int brightness 	= 0; 			// how bright the LED is
+int fadeAmount 	= 32; 				// how many points to fade the LED by
 int sendtemp   	= 0;
 int x10_write  	= 0;
 float t, h;
-int check_time  = 1;			//delay for tempurature check
+int check_time  = 1;				//delay for tempurature check
 int pause_reset = 5;
 int small_timer = 20000;
 int small_count = 0 ;
 bool sent = false;
 int lastMinute;
-int HC, UC;
+int HC, UC, hc ,uc;
 int null_out = 999;
 int state;
+int dummy[16];
+long maxTime = 300;
+int timeVal = 20; // should be 20
+int dim_repeat = 5;
 
 //vars for timer
 long currentSec;
 long lastSec;
 long setTimeSec = 10;
 
-byte Control[16][16] = {
-		//B0000,		//0
-		LED_PIN,	//1
-		RELAY_1,	//2
-		RELAY_2,	//3
-		RELAY_3,	//4
-		LED3_PIN,	//5
-		RELAY_4,	//6
-		B0000,		//7
-		B0000,	//8
-		B0000,	//9
-		B0000,	//10
-		B0000,	//11
-		B0000,	//12
-		B0000,	//13
-		B0000,	//14
-		B0000,	//15
-		B0000,	//16	
-		LED2_PIN,	//1
-		
-};
-
 x10 SendX10 = x10(ZCROSS_PIN, dataPin);	// set up a x10 library instance:
 DHT dht(DHTPIN, DHTTYPE);
 
+#include "devices.h"
+#include "x10-set-timer.h"
 #include "timers.h"
 #include "debug.h"
 #include "Parse_frame.h"
@@ -108,13 +97,35 @@ DHT dht(DHTPIN, DHTTYPE);
 
 
 void loop() {
-	myX10P1 = myX10[15][0];
+	debug = myX10[15][0];
+	debug2 = myX10[15][1];
 	//calculate current uptime in seconds
 	currentSec = seconds();
-	lastSec = check_timer ( setTimeSec, lastSec, 0, 2 );
+	//lastSec = check_timer ( setTimeSec, lastSec, 0, 2 );
+	
 
+	
+	
+	if (hc < 16){
+		if (uc < 16){
+			uc++;
+		} else {
+			hc ++;
+			uc = 0;
+		}
+	} else {
+		hc = 0;
+	}
+	
+	if (typeCode[hc][uc] == 3){
+		if ((stateCode[hc][uc] != OFF ) || (stateCode[hc][uc] != STATUS_OFF)) {
+			dummy[uc] = timer_dec (dummy[uc], hc, uc);
+		}
+	}
+
+	
 	if ( minutes() - lastMinute >= check_time){
-		if (myX10P1 == 1){
+		if (debug == 1){
 			minute_debug();
 		}
 		count_pause = check_time;
@@ -125,19 +136,25 @@ void loop() {
 	if (newX10) { 								// received a new command
 		X10_Debug(); 							// print out the received command
 		newX10 = false;
-		HC = houseCode - 65;
-		UC = unitCode - 1;
+		HC = houseCode - 65;					// set to 0 starting for the array lookups
+		UC = unitCode - 1;						// set to 0 starting for the array lookups
 		send_HC = House[HC];
 		send_UC = Unit[UC];
-		if (typeCode[HC][UC] == 99){
+		if (typeCode[HC][UC] == 1){			// null device ie. debug switch
 			myX10[HC][UC] = set_NULL(cmndCode, Control[HC][UC], myX10[HC][UC]);
-		} else if  (typeCode[HC][UC] == 98){
+		} else if  (typeCode[HC][UC] == 2){	// dimmer output
 			myX10[HC][UC] = set_AIO(cmndCode, Control[HC][UC], myX10[HC][UC]);
-			if ( myX10P1 == 1){
+			if ( debug == 1){
 				state = myX10[HC][UC];
 				X10_debug_aio();
 			}
-		} else {
+		} else if (typeCode[HC][UC] == 3){     // digital timer based on dimmer
+			myX10[HC][UC] = set_timer(cmndCode, Control[HC][UC], myX10[HC][UC], HC, UC);
+			if ( debug == 1){
+				state = myX10[HC][UC];
+				X10_debug_aio();
+			}
+		} else {								//relay control without timer 
 			myX10[HC][UC] = set_DIO(cmndCode, Control[HC][UC], myX10[HC][UC]);
 		}
 		if ((unitCode == 5 && houseCode == 77 && cmndCode == PRE_SET_DIM ) || (unitCode == 5 && houseCode == HOUSE_A && cmndCode == STATUS_REQUEST )) {
@@ -147,12 +164,15 @@ void loop() {
 			newX10temp = true;
 		}
 		X10_debug_notify();
+	} else {
+		HC=hc;
+		UC=uc;
 	}
-	if ( newX10 == false ) {
+	if ( newX10 == false && x10_write == 0) {
 		if ( count_pause == check_time && sent == false) { 
 			tempValue = (int)dht.readTemperature(); 
 			count = tempValue - 4;
-			if (myX10P1 == 1){
+			if (debug == 1){
 				X10_write_temp_debug();
 			}
 			newX10temp = true;
@@ -172,16 +192,27 @@ void loop() {
                 }
 	}
 	if ( x10_write == 1 && newX10 == false ) {
-		if (myX10P1 == 1){
+		if (debug == 1){
 			X10_write_debug();
 		}
-		x10write(autoreport, HC, UC , RPT_SEND);
-		if (stateCode[HC][UC] == OFF)
-			stateCode[HC][UC] = STATUS_OFF;
+
+		if (typeCode[HC][UC] == 3 && stateCode[HC][UC] == DIM ){
+			for (int repeat ; repeat < dim_repeat ; repeat++){
+				x10_write = 1;
+				x10write(autoreport, HC, UC , RPT_SEND);
+			}
+			if (stateCode[HC][UC] == OFF)
+				stateCode[HC][UC] = STATUS_OFF;
+		} else {
+			x10write(autoreport, HC, UC , RPT_SEND);
+			if (stateCode[HC][UC] == OFF)
+				stateCode[HC][UC] = STATUS_OFF;
+		}
 	}
 	
 	if ( sendtemp == 1  && newX10 == false ) {
-		x10temp(send_HC,unitCode,count);
+		if (old_val != tempValue)
+			x10temp(send_HC,unitCode,count);
 	    old_val = tempValue;
         sendtemp = 0;
 	}

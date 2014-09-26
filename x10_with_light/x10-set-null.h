@@ -1,6 +1,5 @@
 int set_NULL(byte cmndCode, int DIO, int state){
 	if (cmndCode == ON) {
-		lastSec = currentSec;
 		stateCode[HC][UC] = STATUS_ON;
 		return 1;
 	}

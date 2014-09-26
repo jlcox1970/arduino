@@ -62,6 +62,8 @@ void X10_write_temp_debug(){
 	Serial.println("----");
 	Serial.print(" tempValue:");
 	Serial.println(tempValue);
+	Serial.print(" old_val:");
+	Serial.println(old_val);
 	Serial.print("count pause: ");
 	Serial.print(count_pause);
 	Serial.print(" check time: " );
@@ -90,3 +92,4 @@ void X10_debug_aio(){
 	Serial.print("DIM value :");
 	Serial.println(state, DEC);
 }
+

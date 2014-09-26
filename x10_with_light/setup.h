@@ -30,13 +30,20 @@ void setup() {
 			stateCode [i][j] = STATUS_OFF;
 		}
 	}
-	typeCode[15][0] = 99;  // setup dull device control for debug on house P unit 1
-	typeCode[0][0]= 98;    // on board led with dimmer
-	
+	typeCode[15][0] = 1;   	// setup null device control for debug on house P unit 1
+	typeCode[15][1] = 1;
+	typeCode[0][0]= 3;     	// on board led with dimmer
+	typeCode[0][1]= 3;		// digital out with dimmer for timer
+	typeCode[0][2]= 3;		// digital out with dimmer for timer
+	typeCode[0][3]= 3;		// digital out with dimmer for timer
+	typeCode[0][6]= 2;		// digital out with dimmer for timer
+								
 	// relay outputs
 	pinMode(RELAY_1, OUTPUT);
 	pinMode(RELAY_2, OUTPUT);
 	pinMode(RELAY_3, OUTPUT);
 	pinMode(RELAY_4, OUTPUT);
-			
+
+	hc = 0;
+	uc = 0;
 }
