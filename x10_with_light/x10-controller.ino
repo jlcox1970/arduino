@@ -71,8 +71,9 @@ int HC, UC, hc ,uc;
 int null_out = 999;
 int state;
 int dummy[16];
-long maxTime = 300;
-int timeVal = 20; // should be 20
+long maxTime = 750;
+int timeVal = maxTime / 5; // should be 20
+int timeBright = maxTime / 5;
 int dim_repeat = 5;
 
 //vars for timer
@@ -117,7 +118,7 @@ void loop() {
 		hc = 0;
 	}
 	
-	if (typeCode[hc][uc] == 3){
+	if (typeCode[hc][uc] == 3 && ! newX10 ){
 		if ((stateCode[hc][uc] != OFF ) || (stateCode[hc][uc] != STATUS_OFF)) {
 			dummy[uc] = timer_dec (dummy[uc], hc, uc);
 		}

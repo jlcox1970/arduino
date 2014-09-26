@@ -22,9 +22,10 @@ int set_timer(byte cmndCode, int DIO, int state, int HC, int UC){
 		}
 	}
 	if (cmndCode == BRIGHT) {
-		state = state + timeVal;
+		state = state + timeBright;
 		if ( state >= 254 )
 			state = 254;
+		myX10[HC][UC] = state ;
 		stateCode[HC][UC] = STATUS_ON;
 	}
 	if (cmndCode == STATUS_REQUEST) {
